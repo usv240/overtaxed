@@ -37,7 +37,6 @@ export function chReadonly(): ClickHouseClient {
   if (!_chReadonly) {
     _chReadonly = createClient({
       ...baseConfig(),
-      readonly: true,
       clickhouse_settings: {
         readonly: "1",
         max_execution_time: 30,
