@@ -1,4 +1,10 @@
 import { query } from "@/lib/clickhouse";
+import {
+  US_EFFECTIVE_TAX_RATE, US_DEFAULT_EFFECTIVE_RATE,
+  UK_BAND_FACTOR, UK_BAND_D_ANNUAL, UK_DEFAULT_BAND_D_ANNUAL,
+  UK_HPI_1991_DIVISOR, UK_DEFAULT_HPI_DIVISOR,
+  bandIndex, bandLetter, bandFor1991,
+} from "@/lib/assumptions";
 import type {
   VerdictCard,
   StreetMap,
@@ -13,11 +19,6 @@ import type {
  * returns both the raw numbers AND the timing, so the UI can show the
  * "⚡ N ms over M rows" badge that proves the ClickHouse speed claim.
  */
-
-// Rough effective property-tax rates for turning over-assessment $ into annual $.
-const EFFECTIVE_TAX_RATE: Record<string, number> = {
-  "Cook County": 0.025,
-};
 
 export type Candidate = {
   pin: string;
@@ -104,7 +105,7 @@ export async function analyzeProperty(pin: string): Promise<{
   if (!rows.length) return { found: false, elapsedMs };
   const r = rows[0];
 
-  const rate = EFFECTIVE_TAX_RATE[r.region] ?? 0.02;
+  const rate = US_EFFECTIVE_TAX_RATE[r.region] ?? US_DEFAULT_EFFECTIVE_RATE;
   // Over-assessment relative to what a FAIR (median-ratio) assessment would be.
   const fairAssessed = r.recent_sale * r.median_ratio;
   const excessAssessed = Math.max(0, r.assessed - fairAssessed);
@@ -217,19 +218,6 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
   return { spec, elapsedMs, rowsRead: n };
 }
 
-// ── UK council tax bands ────────────────────────────────────────────────────
-const BAND_INDEX: Record<string, number> = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8 };
-const BAND_LETTER = ["", "A", "B", "C", "D", "E", "F", "G", "H"];
-// council tax is proportional to Band D (national ratios)
-const BAND_FACTOR: Record<string, number> = { A: 6 / 9, B: 7 / 9, C: 8 / 9, D: 1, E: 11 / 9, F: 13 / 9, G: 15 / 9, H: 18 / 9 };
-const BAND_D_ANNUAL = 990; // representative inner-London Band D (£/yr)
-const HPI_1991: Record<string, number> = { "GREATER LONDON": 7.5 }; // sale→1991 divisor
-const BAND_1991: [string, number, number][] = [
-  ["A", 0, 40000], ["B", 40001, 52000], ["C", 52001, 68000], ["D", 68001, 88000],
-  ["E", 88001, 120000], ["F", 120001, 160000], ["G", 160001, 320000], ["H", 320001, 1e12],
-];
-const bandFor1991 = (v: number) => BAND_1991.find(([, lo, hi]) => v >= lo && v <= hi)?.[0] ?? "H";
-
 /** UK: is this home in the wrong council tax band? (neighbour comparison + 1991 back-cast) */
 export async function checkUkBand(addressQuery: string): Promise<{
   found: boolean;
@@ -238,15 +226,16 @@ export async function checkUkBand(addressQuery: string): Promise<{
   elapsedMs: number;
 }> {
   const { rows: subj, elapsedMs } = await query<{
-    address: string; postcode: string; band: string; lat: number; lng: number;
+    address: string; postcode: string; band: string; lat: number; lng: number; council: string;
   }>(
-    `SELECT address, postcode, band, lat, lng FROM overtaxed.uk_bands
+    `SELECT address, postcode, band, lat, lng, council FROM overtaxed.uk_bands
      WHERE positionCaseInsensitive(address, {q:String}) > 0
      ORDER BY length(address) ASC LIMIT 1`,
     { q: addressQuery },
   );
   if (!subj.length) return { found: false, elapsedMs };
   const s = subj[0];
+  const bandDAnnual = UK_BAND_D_ANNUAL[s.council] ?? UK_DEFAULT_BAND_D_ANNUAL;
 
   // neighbours: same postcode (or within 300m), excluding subject
   const { rows: neigh } = await query<{ address: string; band: string; lat: number; lng: number }>(
@@ -256,9 +245,9 @@ export async function checkUkBand(addressQuery: string): Promise<{
   );
 
   // proposed band = median neighbour band
-  const neighIdx = neigh.map((n) => BAND_INDEX[n.band]).filter(Boolean).sort((a, b) => a - b);
-  const proposedIdx = neighIdx.length ? neighIdx[Math.floor(neighIdx.length / 2)] : BAND_INDEX[s.band];
-  const subjIdx = BAND_INDEX[s.band];
+  const neighIdx = neigh.map((n) => bandIndex[n.band]).filter(Boolean).sort((a, b) => a - b);
+  const proposedIdx = neighIdx.length ? neighIdx[Math.floor(neighIdx.length / 2)] : bandIndex[s.band];
+  const subjIdx = bandIndex[s.band];
 
   // corroboration: back-cast the recent sale to 1991
   const { rows: sale } = await query<{ sp: number; region: string; saleYear: number }>(
@@ -270,14 +259,14 @@ export async function checkUkBand(addressQuery: string): Promise<{
   let estBand: string | null = null;
   let saleYear = 2023;
   if (sale.length) {
-    const factor = HPI_1991[sale[0].region.toUpperCase()] ?? 5.3;
+    const factor = UK_HPI_1991_DIVISOR[sale[0].region.toUpperCase()] ?? UK_DEFAULT_HPI_DIVISOR;
     estBand = bandFor1991(sale[0].sp / factor);
     saleYear = sale[0].saleYear;
   }
 
   const overBanded = subjIdx > proposedIdx;
-  const proposedBand = BAND_LETTER[proposedIdx];
-  const annualOverpay = Math.max(0, Math.round(BAND_D_ANNUAL * (BAND_FACTOR[s.band] - BAND_FACTOR[proposedBand])));
+  const proposedBand = bandLetter[proposedIdx];
+  const annualOverpay = Math.max(0, Math.round(bandDAnnual * (UK_BAND_FACTOR[s.band] - UK_BAND_FACTOR[proposedBand])));
   const yearsOwned = Math.max(1, 2026 - saleYear);
   const owedBack = annualOverpay * yearsOwned;
 
@@ -299,7 +288,7 @@ export async function checkUkBand(addressQuery: string): Promise<{
 
   const toPoint = (address: string, band: string, lat: number, lng: number, isSubject: boolean) => ({
     address: `${address} · Band ${band}`,
-    lat, lng, ratio: BAND_INDEX[band] / proposedIdx, isSubject,
+    lat, lng, ratio: bandIndex[band] / proposedIdx, isSubject,
   });
   const street: StreetMap = {
     kind: "streetMap",

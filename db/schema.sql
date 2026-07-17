@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS overtaxed.uk_bands
     band          LowCardinality(String),        -- A..H
     lat           Float64,
     lng           Float64,
+    council       String DEFAULT '',             -- billing authority (for Band D £ lookup)
     looked_up_at  DateTime DEFAULT now()
 )
 ENGINE = ReplacingMergeTree(looked_up_at)

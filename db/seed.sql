@@ -51,9 +51,9 @@ INSERT INTO overtaxed.sales (country, region, txn_id, pin, address, postcode, sa
 ('UK','Greater London','U004','','16 Lavender Sweep, London','SW11 1DX','2023-11-30',662000,51.4639,-0.1667,'terraced',3),
 ('UK','Greater London','U005','','8 Lavender Sweep, London','SW11 1DX','2023-09-12',635000,51.4631,-0.1663,'terraced',3);
 
-INSERT INTO overtaxed.uk_bands (postcode, address, band, lat, lng) VALUES
-('SW11 1DX','12 Lavender Sweep, London','E',51.4635,-0.1665),
-('SW11 1DX','14 Lavender Sweep, London','D',51.4637,-0.1666),
-('SW11 1DX','10 Lavender Sweep, London','D',51.4633,-0.1664),
-('SW11 1DX','16 Lavender Sweep, London','D',51.4639,-0.1667),
-('SW11 1DX','8 Lavender Sweep, London','D',51.4631,-0.1663);
+INSERT INTO overtaxed.uk_bands (postcode, address, band, lat, lng, council) VALUES
+('SW11 1DX','12 Lavender Sweep, London','E',51.4635,-0.1665,'Wandsworth'),
+('SW11 1DX','14 Lavender Sweep, London','D',51.4637,-0.1666,'Wandsworth'),
+('SW11 1DX','10 Lavender Sweep, London','D',51.4633,-0.1664,'Wandsworth'),
+('SW11 1DX','16 Lavender Sweep, London','D',51.4639,-0.1667,'Wandsworth'),
+('SW11 1DX','8 Lavender Sweep, London','D',51.4631,-0.1663,'Wandsworth');
