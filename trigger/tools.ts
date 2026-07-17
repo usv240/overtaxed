@@ -5,6 +5,7 @@ import {
   analyzeProperty,
   getRegressivity,
   getStreetMap,
+  generateAppealPacket,
 } from "@/lib/queries";
 import type { VizSpec } from "@/lib/viz-catalog";
 
@@ -60,9 +61,20 @@ export const regressivityTool = tool({
   },
 });
 
+export const appealPacketTool = tool({
+  description:
+    "Generate a ready-to-file appeal packet (grounds, proposed value, evidence, filing link) for a parcel. Call ONLY after the user agrees to appeal.",
+  inputSchema: z.object({ pin: z.string() }),
+  execute: async ({ pin }) => {
+    const { spec, elapsedMs } = await generateAppealPacket(pin);
+    return { visuals: spec ? [spec] : [], elapsedMs };
+  },
+});
+
 export const overtaxedTools = {
   findProperty: findPropertyTool,
   analyzeProperty: analyzePropertyTool,
   streetMap: streetMapTool,
   regressivity: regressivityTool,
+  generateAppealPacket: appealPacketTool,
 };

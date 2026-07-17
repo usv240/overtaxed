@@ -5,6 +5,7 @@ import type {
   RegressivityScatter,
   DistributionStrip,
   CompsTable,
+  AppealPacket,
 } from "@/lib/viz-catalog";
 
 /**
@@ -76,10 +77,12 @@ export async function analyzeProperty(pin: string): Promise<{
        SELECT pin, argMax(sale_price, sale_date) AS sp
        FROM overtaxed.sales GROUP BY pin
      ),
+     subj AS (SELECT lat, lng FROM overtaxed.assessments WHERE pin = {pin:String} LIMIT 1),
      nbhd AS (
+       -- neighbourhood = parcels within 2km of the subject (local uniformity, not county-wide)
        SELECT quantileExact(0.5)(a.assessed_value / ls.sp) AS median_ratio
        FROM overtaxed.assessments a INNER JOIN latest_sales ls USING (pin)
-       WHERE a.region = (SELECT region FROM overtaxed.assessments WHERE pin = {pin:String} LIMIT 1)
+       WHERE geoDistance((SELECT lng FROM subj), (SELECT lat FROM subj), a.lng, a.lat) < 2000
      )
      SELECT
        a.address                                   AS address,
@@ -211,6 +214,33 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
         : `PRD ${prd} — within the fair range.`,
   };
   return { spec, elapsedMs, rowsRead: n };
+}
+
+/** Build a ready-to-file appeal packet from the over-assessment analysis. */
+export async function generateAppealPacket(pin: string): Promise<{ spec: AppealPacket | null; elapsedMs: number }> {
+  const a = await analyzeProperty(pin);
+  if (!a.found || !a.meta) return { spec: null, elapsedMs: a.elapsedMs };
+  const m = a.meta;
+  const fair = Math.round(m.recent_sale * m.median_ratio);
+  const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+
+  const spec: AppealPacket = {
+    kind: "appealPacket",
+    jurisdiction: "Cook County, IL — Assessor's Office / Board of Review",
+    summary: `Grounds: lack of uniformity + overvaluation. Your assessment implies a market value of ${usd(m.assessed)}, but ${a.comps?.comps.length ?? 0} comparable arms-length sales nearby support about ${usd(fair)}.`,
+    fields: [
+      { label: "Property PIN", value: pin },
+      { label: "Address", value: m.address },
+      { label: "Current implied market value", value: usd(m.assessed) },
+      { label: "Proposed market value", value: usd(fair) },
+      { label: "Neighbourhood median ratio", value: m.median_ratio.toFixed(2) },
+      { label: "Your ratio", value: m.ratio.toFixed(2) },
+      { label: "Grounds", value: "Lack of uniformity (35 ILCS 200/9-5) + overvaluation" },
+      { label: "Estimated annual saving", value: usd(m.annualOverpay) },
+    ],
+    filingUrl: "https://www.cookcountyassessor.com/online-appeals",
+  };
+  return { spec, elapsedMs: a.elapsedMs };
 }
 
 /** Street map: subject + neighbours coloured by assessment ratio. */

@@ -22,7 +22,7 @@ ${VIZ_CATALOG_REFERENCE}
 - "Is my area/county fair?" / fairness → regressivity(region).
 - If findProperty returns multiple DIFFERENT candidates, ask which one in one short sentence.
 - Never invent numbers — every figure comes from a tool result.
-- After showing over-assessment, offer an appeal in one short sentence.
+- After showing over-assessment, offer an appeal in one short sentence. If the user agrees, call generateAppealPacket(pin).
 - Estimates from public records, not tax or legal advice.`;
 
 /**
