@@ -16,33 +16,53 @@ Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026** — th
 
 | Layer | Tech | Role |
 |---|---|---|
-| Primary database | **ClickHouse Cloud** | 24M+ UK sales + millions of US parcels; live `geoDistance` comps, IAAO sales-ratio science (PRD/COD), sub-second regressivity aggregation |
-| Orchestration | **Trigger.dev `chat.agent()`** | the agent loop + long-running ingestion + live UK band lookup + appeal generation + human-in-the-loop |
-| OLTP (bonus) | **Postgres → ClickPipes** | saved properties & appeals → CDC into ClickHouse (OLTP+OLAP) |
-| Frontend | **Next.js · MapLibre GL · Recharts · shadcn/ui · json-render** | the response *is* a map / chart / interactive component |
-| Agent brain | **Claude (Anthropic)** via AI SDK | tool routing + narration |
+| Primary database | **ClickHouse Cloud** | 6M+ UK sales + 1.6M US parcels; live `geoDistance` comps, IAAO sales-ratio science (PRD/COD), sub-second regressivity aggregation |
+| Orchestration | **Trigger.dev `chat.agent()`** | the agent loop + durable long-running ingestion tasks + appeal generation |
+| OLTP (bonus) | **ClickHouse Cloud Postgres** | saved properties & appeals, joined live into ClickHouse via `postgresql()` |
+| Frontend | **Next.js · MapLibre GL · Recharts** | the response *is* a map / chart / interactive component |
+| Agent brain | **Claude (Anthropic)** via AI SDK | tool routing + one-sentence narration |
 
-## Architecture
+## Data actually loaded (all real, all live)
 
-_(diagram — see [docs/PLAN.md](docs/PLAN.md) §2)_
+- **US — Cook County Assessor Open Data:** ~1.59M residential **parcels** (geo + address, from Parcel Universe ⋈ Parcel Addresses), ~1.59M **assessments**, ~69k arms-length **sales**.
+- **UK — [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads):** **6.06M** real sales (2019–2024, Open Government Licence).
+- Reference inputs (tax rates, statutory band ratios, 1991 baselines) are consolidated + sourced in [`lib/assumptions.ts`](lib/assumptions.ts) and shown at **/methodology**.
 
-## Data sources
+## How ClickHouse & Trigger.dev are used (both load-bearing)
 
-- **US:** Cook County Assessor — Assessed Values + Parcel Sales (open data).
-- **UK:** HM Land Registry Price Paid Data (24M+ sales, Open Government Licence); ONS postcode centroids; VOA band via live lookup.
+**ClickHouse — the primary database and the star of the demo.**
+- The whole analytical layer: `geoDistance()` comparable-sales, local sales-ratio, and the **regressivity** study (**PRD** + **COD**, the IAAO uniformity metrics) computed over **60k+ sold parcels sub-second**.
+- **Zero-ETL ingestion:** the ingestion tasks run `INSERT … SELECT FROM url(...)` so ClickHouse reads the raw government CSVs straight off HTTP — no separate loader.
+- **OLTP+OLAP federation:** a single ClickHouse query reads the user's Postgres rows via the `postgresql()` table function and JOINs them against the assessment/sales tables (see [`lib/portfolio.ts`](lib/portfolio.ts)).
+- Latency is surfaced in the UI (the ⚡ badge) — the speed claim is shown, not asserted.
+
+**Trigger.dev — the orchestration layer.**
+- **`chat.agent("overtaxed")`** ([`trigger/chat.ts`](trigger/chat.ts)) drives the whole conversation; tools return **visualization specs**, never prose.
+- **Durable, long-running ingestion tasks** ([`trigger/ingest.ts`](trigger/ingest.ts)): UK Land Registry (per year), Cook County assessments+sales, and the parcel geo/address join — retryable, no timeouts, visible in the Trigger dashboard.
+- Tools: `findProperty`, `analyzeProperty`, `streetMap`, `regressivity`, `checkUkBand`, `generateAppealPacket`.
+
+## Bonus — best OLTP + OLAP integration
+
+**ClickHouse Cloud Postgres (OLTP)** stores saved properties and appeal status; the **ClickHouse (OLAP)** analytical tables hold 6M+ rows. The "My Portfolio" view runs **one ClickHouse query** that federates Postgres via `postgresql()` and joins it against the OLAP tables — OLTP + OLAP in a single statement, one vendor.
 
 ## Local development
 
 ```bash
-cp .env.example .env   # then fill in real values
+cp .env.example .env          # fill in ClickHouse, Postgres, Trigger, Anthropic
 npm install
-npx trigger.dev@latest dev   # orchestration
-npm run dev                  # web app → http://localhost:3000
+node scripts/apply-sql.mjs db/schema.sql      # ClickHouse tables
+node scripts/apply-pg.mjs  db/postgres-schema.sql   # Postgres (OLTP) tables
+npx trigger.dev@latest dev    # orchestration worker
+npm run dev                   # web app → http://localhost:3000
+# then load real data:
+node scripts/run-task.mjs ingest-uk-land-registry '{"year":2023}'
+node scripts/run-task.mjs ingest-cook-county '{"year":2023}'
+node scripts/run-task.mjs ingest-cook-parcels '{"year":2023}'
 ```
 
-## How ClickHouse & Trigger.dev are used
+## Methodology & honesty
 
-_(filled in as we build — this section is graded, 25% of score)_
+Overtaxed makes an **estimate from public records — not tax or legal advice**. What's computed live vs. sourced, plus limitations, are documented at **/methodology** and in [`lib/assumptions.ts`](lib/assumptions.ts).
 
 ## License
 

@@ -52,7 +52,10 @@ export function Chat() {
           <h1 className="text-lg font-bold">Overtaxed</h1>
           <p className="text-xs text-neutral-500">Type your address — see if you&apos;re overpaying. The answer is a picture, not a paragraph.</p>
         </div>
-        <a href="/portfolio" className="rounded-full border border-black/10 px-3 py-1.5 text-sm hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5">My Portfolio</a>
+        <nav className="flex items-center gap-2">
+          <a href="/methodology" className="rounded-full border border-black/10 px-3 py-1.5 text-sm hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5">Methodology</a>
+          <a href="/portfolio" className="rounded-full border border-black/10 px-3 py-1.5 text-sm hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5">My Portfolio</a>
+        </nav>
       </header>
 
       <div className="flex-1 space-y-2 overflow-y-auto px-4">
