@@ -60,3 +60,73 @@ export const ingestUkLandRegistry = task({
     return { year, rowsIngested: Number(c), elapsedSec: Math.round((Date.now() - started) / 1000) };
   },
 });
+
+// ── Cook County (US) — assessed values + arms-length residential sales ──
+// Socrata open data. certified_tot is assessed at 10% → market value = ×10.
+const socrata = (dataset: string, select: string, where: string, limit: number) => {
+  const p = new URLSearchParams({ $select: select, $where: where, $limit: String(limit) });
+  return `https://datacatalog.cookcountyil.gov/resource/${dataset}.csv?${p.toString()}`;
+};
+
+/** Ingest one year of Cook County assessments + arms-length residential sales. */
+export const ingestCookCounty = task({
+  id: "ingest-cook-county",
+  maxDuration: 3600,
+  run: async (payload: { year?: number }) => {
+    const year = payload.year ?? 2023;
+    const client = ch();
+    const started = Date.now();
+    const armsLength =
+      `sale_filter_less_than_10k='false' AND sale_filter_deed_type='false' AND sale_filter_same_sale_within_365='false'`;
+
+    // sales (keep curated seed rows: pin like 'P%')
+    await client.command({
+      query: `DELETE FROM overtaxed.sales WHERE country='US' AND region='Cook County' AND pin NOT LIKE 'P%' AND toYear(sale_date)=${year}`,
+    });
+    const salesUrl = socrata(
+      "wvhk-k5uv",
+      "pin,sale_date,sale_price,class",
+      `year='${year}' AND starts_with(class,'2') AND ${armsLength}`,
+      1_000_000,
+    );
+    await client.command({
+      query: `
+        INSERT INTO overtaxed.sales
+          (country, region, txn_id, pin, address, postcode, sale_date, sale_price, lat, lng, prop_type, beds)
+        SELECT 'US','Cook County', concat('CC',pin), pin, '', '',
+               toDate(substring(sale_date,1,10)), toUInt64(sale_price), 0, 0, 'single', NULL
+        FROM url('${salesUrl}', 'CSVWithNames',
+             'pin String, sale_date String, sale_price String, class String')
+        WHERE toUInt64OrZero(sale_price) > 10000`,
+    });
+
+    // assessments (market value = certified_tot × 10)
+    await client.command({
+      query: `DELETE FROM overtaxed.assessments WHERE region='Cook County' AND pin NOT LIKE 'P%' AND tax_year=${year}`,
+    });
+    const assessUrl = socrata(
+      "uzyt-m557",
+      "pin,class,township_name,certified_tot",
+      `year='${year}' AND starts_with(class,'2') AND certified_tot>'0'`,
+      3_000_000,
+    );
+    await client.command({
+      query: `
+        INSERT INTO overtaxed.assessments
+          (region, pin, tax_year, assessed_value, lat, lng, class, address)
+        SELECT 'Cook County', pin, ${year}, toUInt64(certified_tot)*10, 0, 0, class, township_name
+        FROM url('${assessUrl}', 'CSVWithNames',
+             'pin String, class String, township_name String, certified_tot String')
+        WHERE toUInt64OrZero(certified_tot) > 0`,
+    });
+
+    const rs = await client.query({
+      query: `SELECT
+        (SELECT count() FROM overtaxed.sales WHERE region='Cook County' AND pin NOT LIKE 'P%' AND toYear(sale_date)=${year}) AS sales,
+        (SELECT count() FROM overtaxed.assessments WHERE region='Cook County' AND pin NOT LIKE 'P%' AND tax_year=${year}) AS assessments`,
+      format: "JSONEachRow",
+    });
+    const [counts] = (await rs.json()) as { sales: string; assessments: string }[];
+    return { year, sales: Number(counts.sales), assessments: Number(counts.assessments), elapsedSec: Math.round((Date.now() - started) / 1000) };
+  },
+});

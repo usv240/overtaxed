@@ -155,47 +155,62 @@ export async function analyzeProperty(pin: string): Promise<{
   };
 }
 
-/** THE INNOVATION: regressivity (PRD/COD) + scatter points for a region. */
+/** THE INNOVATION: regressivity (PRD/COD) + scatter + price-quintile gradient. */
 export async function getRegressivity(region: string): Promise<{ spec: RegressivityScatter; elapsedMs: number; rowsRead: number }> {
-  const { rows, elapsedMs } = await query<{
-    salePrice: number; ratio: number;
-  }>(
-    `SELECT ls.sp AS salePrice, round(a.assessed_value / ls.sp, 4) AS ratio
-     FROM overtaxed.assessments a
-     INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales GROUP BY pin) ls USING (pin)
-     WHERE a.region = {region:String}
-     ORDER BY salePrice ASC`,
+  // shared join + sanity filters (arms-length ratio range, real sale prices)
+  const CTE = `
+    WITH ratios AS (
+      SELECT a.assessed_value AS av, ls.sp AS sp, a.assessed_value / ls.sp AS ratio
+      FROM overtaxed.assessments a
+      INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp
+                  FROM overtaxed.sales WHERE region = {region:String} GROUP BY pin) ls USING (pin)
+      WHERE a.region = {region:String} AND ls.sp > 20000 AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+    )`;
+
+  const { rows: stat, elapsedMs } = await query<{ prd: number; cod: number; n: number }>(
+    `${CTE}
+     SELECT count() AS n,
+            round(avg(ratio)/(sum(av)/sum(sp)), 4) AS prd,
+            round(100*avg(abs(ratio - med.m))/any(med.m), 2) AS cod
+     FROM ratios CROSS JOIN (SELECT quantileExact(0.5)(ratio) AS m FROM ratios) AS med`,
     { region },
   );
 
-  const { rows: stat } = await query<{ prd: number; cod: number }>(
-    `WITH ratios AS (
-       SELECT a.assessed_value AS av, ls.sp AS sp, a.assessed_value/ls.sp AS ratio
-       FROM overtaxed.assessments a
-       INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales GROUP BY pin) ls USING (pin)
-       WHERE a.region = {region:String}
-     )
-     SELECT round(avg(ratio)/(sum(av)/sum(sp)),4) AS prd,
-            round(100*avg(abs(ratio - med.m))/any(med.m),2) AS cod
-     FROM ratios CROSS JOIN (SELECT quantileExact(0.5)(ratio) AS m FROM ratios) AS med`,
+  // a random sample of points so the browser scatter stays light at scale
+  const { rows: points } = await query<{ salePrice: number; ratio: number }>(
+    `${CTE} SELECT sp AS salePrice, round(ratio, 4) AS ratio FROM ratios ORDER BY rand() LIMIT 500`,
+    { region },
+  );
+
+  // the regressivity gradient: avg ratio by sale-price quintile
+  const { rows: quintiles } = await query<{ quintile: number; avgPrice: number; avgRatio: number }>(
+    `${CTE.replace("SELECT a.assessed_value AS av, ls.sp AS sp, a.assessed_value / ls.sp AS ratio",
+                   "SELECT ls.sp AS sp, a.assessed_value / ls.sp AS ratio, ntile(5) OVER (ORDER BY ls.sp) AS q")}
+     SELECT q AS quintile, round(avg(sp)) AS avgPrice, round(avg(ratio), 3) AS avgRatio
+     FROM ratios GROUP BY q ORDER BY q`,
     { region },
   );
 
   const prd = stat[0]?.prd ?? 1;
   const cod = stat[0]?.cod ?? 0;
+  const n = stat[0]?.n ?? points.length;
+  const lo = quintiles[0]?.avgRatio;
+  const hi = quintiles[quintiles.length - 1]?.avgRatio;
 
   const spec: RegressivityScatter = {
     kind: "regressivityScatter",
     region,
-    points: rows,
+    points,
     prd,
     cod,
+    nParcels: n,
+    quintiles,
     caption:
-      prd > 1.03
-        ? `PRD ${prd} > 1.03 → regressive: cheaper homes are over-assessed relative to expensive ones.`
-        : `PRD ${prd} → within the fair range.`,
+      prd > 1.03 && lo != null && hi != null
+        ? `Regressive (PRD ${prd}): cheapest homes assessed at ${lo}× value, priciest at ${hi}× — the poor pay a higher effective rate.`
+        : `PRD ${prd} — within the fair range.`,
   };
-  return { spec, elapsedMs, rowsRead: rows.length };
+  return { spec, elapsedMs, rowsRead: n };
 }
 
 /** Street map: subject + neighbours coloured by assessment ratio. */

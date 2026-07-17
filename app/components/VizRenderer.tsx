@@ -100,6 +100,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
           <p className="text-sm text-neutral-500">
             PRD <strong className={spec.prd > 1.03 ? "text-red-600" : "text-green-600"}>{spec.prd}</strong>
             {" "}· COD <strong>{spec.cod}</strong>
+            {spec.nParcels != null && <span className="text-neutral-400"> · {spec.nParcels.toLocaleString()} parcels</span>}
             {spec.prd > 1.03 && <span className="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">REGRESSIVE</span>}
           </p>
           <div className="mt-2 h-64 w-full">
@@ -118,7 +119,20 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
               </ScatterChart>
             </ResponsiveContainer>
           </div>
-          {spec.caption && <p className="text-xs text-neutral-500">{spec.caption}</p>}
+          {spec.quintiles && spec.quintiles.length > 0 && (
+            <div className="mt-1 flex items-end gap-1">
+              {spec.quintiles.map((q) => (
+                <div key={q.quintile} className="flex-1 text-center">
+                  <div className="flex h-14 items-end">
+                    <div className="w-full rounded-t" style={{ height: `${Math.min(100, q.avgRatio * 80)}%`, background: ratioColor(q.avgRatio) }} />
+                  </div>
+                  <div className="text-[10px] text-neutral-400">${(q.avgPrice / 1000).toFixed(0)}k</div>
+                  <div className="text-[10px] font-semibold">{q.avgRatio}×</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {spec.caption && <p className="mt-1 text-xs text-neutral-500">{spec.caption}</p>}
           <Badge ms={ms} rows={rows} />
         </Card>
       );

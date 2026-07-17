@@ -62,6 +62,12 @@ export const RegressivityScatter = z.object({
   prd: z.number(),
   /** Coefficient of Dispersion — assessment uniformity (lower = fairer). */
   cod: z.number(),
+  /** total parcels analysed (points may be a sample of this). */
+  nParcels: z.number().optional(),
+  /** avg assessment ratio by sale-price quintile — the regressivity gradient. */
+  quintiles: z
+    .array(z.object({ quintile: z.number(), avgPrice: z.number(), avgRatio: z.number() }))
+    .optional(),
   trend: z.object({ slope: z.number(), intercept: z.number() }).optional(),
   caption: z.string().optional(),
 });
