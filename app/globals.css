@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
+/* class-based dark mode (toggled on <html> by ThemeToggle / no-flash script) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Design tokens ─────────────────────────────────────────────────────────
+   Light and dark are both deliberately off-pure: soft slate, never #fff/#000. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f7fb;   /* soft cool page bg */
+  --surface:    #ffffff;   /* cards */
+  --surface-2:  #eef2f8;   /* inset / hover */
+  --border:     #e3e8f0;
+  --foreground: #101828;   /* near-black slate */
+  --muted:      #5b6675;
+  --accent:     #4f46e5;   /* indigo-600 */
+  --accent-hover:#4338ca;
+  --accent-fg:  #ffffff;
+  --accent-soft:#eef2ff;
+  --pos:        #15803d;
+  --neg:        #dc2626;
+  --warn:       #c2410c;
+  --ring:       rgba(79, 70, 229, 0.35);
+  --glow:       rgba(79, 70, 229, 0.10);
+}
+
+.dark {
+  --background: #0b1020;   /* deep navy-slate, NOT black */
+  --surface:    #141c30;
+  --surface-2:  #1d2740;
+  --border:     rgba(148, 163, 184, 0.14);
+  --foreground: #e8eef8;
+  --muted:      #93a1b5;
+  --accent:     #6366f1;   /* indigo-500, brighter for dark */
+  --accent-hover:#818cf8;
+  --accent-fg:  #ffffff;
+  --accent-soft:#1c2444;
+  --pos:        #34d399;
+  --neg:        #f87171;
+  --warn:       #fb923c;
+  --ring:       rgba(99, 102, 241, 0.45);
+  --glow:       rgba(99, 102, 241, 0.16);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface:    var(--surface);
+  --color-surface-2:  var(--surface-2);
+  --color-border:     var(--border);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted:      var(--muted);
+  --color-accent:     var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg:  var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-pos:        var(--pos);
+  --color-neg:        var(--neg);
+  --color-warn:       var(--warn);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+html { color-scheme: light dark; }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+/* soft accent glow used behind the hero — keeps dark mode from reading as flat black */
+.hero-glow {
+  background:
+    radial-gradient(60rem 32rem at 50% -8rem, var(--glow), transparent 70%),
+    radial-gradient(40rem 24rem at 85% 10rem, color-mix(in srgb, var(--accent) 8%, transparent), transparent 70%);
+}
+
+a { color: inherit; }

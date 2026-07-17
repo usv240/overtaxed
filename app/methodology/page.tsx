@@ -14,8 +14,8 @@ async function counts() {
 
 function Row({ k, v }: { k: string; v: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-4 border-t border-black/5 py-1.5 text-sm dark:border-white/5">
-      <span className="text-neutral-500">{k}</span>
+    <div className="flex justify-between gap-4 border-t border-border py-1.5 text-sm ">
+      <span className="text-muted">{k}</span>
       <span className="text-right">{v}</span>
     </div>
   );
@@ -29,24 +29,24 @@ export default async function MethodologyPage() {
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Methodology &amp; sources</h1>
-        <Link href="/" className="text-sm text-blue-600 underline">← back</Link>
+        <Link href="/" className="text-sm text-accent underline">← back</Link>
       </div>
-      <p className="mb-6 text-sm text-neutral-600 dark:text-neutral-300">
+      <p className="mb-6 text-sm text-muted">
         Overtaxed makes an <strong>estimate from public records</strong>. It is not tax or legal advice. Everything
         below is transparent so you can check our work.
       </p>
 
       <h2 className="mb-1 mt-6 font-semibold">Live data (loaded into ClickHouse now)</h2>
-      <div className="rounded-xl border border-black/10 p-3 dark:border-white/10">
+      <div className="rounded-xl border border-border p-3 ">
         {rows.map((r) => <Row key={r.metric} k={r.metric} v={<strong>{fmt(r.n)}</strong>} />)}
       </div>
-      <ul className="mt-2 space-y-1 text-sm text-neutral-500">
+      <ul className="mt-2 space-y-1 text-sm text-muted">
         <li>• US: <a className="underline" href="https://datacatalog.cookcountyil.gov/">Cook County Assessor Open Data</a> — Parcel Universe (geo), Parcel Addresses, Assessed Values, Parcel Sales.</li>
         <li>• UK: <a className="underline" href="https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads">HM Land Registry Price Paid Data</a> (Open Government Licence).</li>
       </ul>
 
       <h2 className="mb-1 mt-6 font-semibold">Computed live (no hardcoded numbers)</h2>
-      <ul className="space-y-1 text-sm text-neutral-600 dark:text-neutral-300">
+      <ul className="space-y-1 text-sm text-muted">
         <li>• <strong>Comparable sales</strong> — nearest arms-length sales by <code>geoDistance()</code>.</li>
         <li>• <strong>Over-assessment</strong> — your assessment ratio vs the local (≤2km) neighbourhood median.</li>
         <li>• <strong>Regressivity</strong> — <strong>PRD</strong> (Price-Related Differential) and <strong>COD</strong> (Coefficient of Dispersion), the standard IAAO uniformity metrics, over every sold parcel in the county.</li>
@@ -54,7 +54,7 @@ export default async function MethodologyPage() {
       </ul>
 
       <h2 className="mb-1 mt-6 font-semibold">Reference inputs (statutory / published — with sources)</h2>
-      <div className="space-y-2 text-sm text-neutral-600 dark:text-neutral-300">
+      <div className="space-y-2 text-sm text-muted">
         <p>These few values are external inputs (not derivable from sales data). They live in one place — <code>lib/assumptions.ts</code> — each cited:</p>
         <Row k="Cook County effective tax rate" v="~2.5% · Cook County Treasurer" />
         <Row k="Cook County assessment level" v="10% of market · 35 ILCS 200" />
@@ -65,7 +65,7 @@ export default async function MethodologyPage() {
       </div>
 
       <h2 className="mb-1 mt-6 font-semibold">Honest limitations</h2>
-      <ul className="space-y-1 text-sm text-neutral-500">
+      <ul className="space-y-1 text-sm text-muted">
         <li>• Estimates depend on recent comparable sales; sparse areas get lower confidence (shown on the verdict).</li>
         <li>• UK per-property council-tax bands are not published in bulk (VOA restriction). We demonstrate the neighbour-comparison method on a curated block; production uses an on-demand VOA lookup (a Trigger.dev task).</li>
         <li>• Not affiliated with any assessor, the VOA, or any government body.</li>

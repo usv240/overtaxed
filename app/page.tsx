@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { InfoTip } from "@/app/components/InfoTip";
+import { ThemeToggle } from "@/app/components/ThemeToggle";
 
 export const metadata = {
   title: "Overtaxed — are you overpaying on your home?",
@@ -8,83 +9,90 @@ export const metadata = {
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <div className="relative rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-neutral-900">
-      <div className="mb-2 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">{n}</div>
+    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm transition-shadow hover:shadow-md">
+      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg">{n}</div>
       <h3 className="font-semibold">{title}</h3>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">{children}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted">{children}</p>
     </div>
   );
 }
 
 function Stat({ big, small }: { big: string; small: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-black/10 p-5 dark:border-white/10">
-      <div className="text-3xl font-bold text-blue-600">{big}</div>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">{small}</p>
+    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+      <div className="text-3xl font-bold tracking-tight text-accent">{big}</div>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted">{small}</p>
     </div>
   );
 }
 
 function Feature({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-black/10 bg-white p-5 dark:border-white/10 dark:bg-neutral-900">
+    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <div className="text-2xl">{icon}</div>
-      <h3 className="mt-2 font-semibold">{title}</h3>
-      <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">{children}</p>
+      <h3 className="mt-3 font-semibold">{title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-muted">{children}</p>
     </div>
   );
 }
 
 function Faq({ q, a }: { q: string; a: React.ReactNode }) {
   return (
-    <details className="group rounded-xl border border-black/10 p-4 dark:border-white/10">
-      <summary className="cursor-pointer list-none font-medium marker:content-none">
-        <span className="mr-2 text-blue-600 group-open:hidden">＋</span>
-        <span className="mr-2 hidden text-blue-600 group-open:inline">－</span>
+    <details className="group rounded-xl border border-border bg-surface px-4 py-3.5">
+      <summary className="flex cursor-pointer list-none items-center font-medium marker:content-none">
+        <span className="mr-3 text-accent transition-transform group-open:rotate-45">＋</span>
         {q}
       </summary>
-      <p className="mt-2 pl-6 text-sm text-neutral-600 dark:text-neutral-300">{a}</p>
+      <p className="mt-2 pl-7 text-sm leading-relaxed text-muted">{a}</p>
     </details>
   );
+}
+
+function Kicker({ children }: { children: React.ReactNode }) {
+  return <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-accent">{children}</p>;
 }
 
 export default function Landing() {
   return (
     <div className="min-h-dvh">
       {/* Nav */}
-      <nav className="sticky top-0 z-40 border-b border-black/5 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-black/60">
+      <nav className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <span className="text-lg font-bold">Overtaxed</span>
-          <div className="flex items-center gap-2 text-sm">
-            <a href="#how" className="hidden rounded-full px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 sm:inline">How it works</a>
-            <Link href="/methodology" className="hidden rounded-full px-3 py-1.5 hover:bg-black/5 dark:hover:bg-white/10 sm:inline">Methodology</Link>
-            <Link href="/app" className="rounded-full bg-blue-600 px-4 py-1.5 font-medium text-white hover:bg-blue-700">Check my home</Link>
+          <span className="text-lg font-bold tracking-tight">Overtaxed</span>
+          <div className="flex items-center gap-1.5 text-sm">
+            <a href="#how" className="hidden rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-foreground sm:inline">How it works</a>
+            <Link href="/methodology" className="hidden rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-foreground sm:inline">Methodology</Link>
+            <ThemeToggle />
+            <Link href="/app" className="rounded-full bg-accent px-4 py-1.5 font-medium text-accent-fg shadow-sm transition-colors hover:bg-accent-hover">Check my home</Link>
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <header className="mx-auto max-w-3xl px-4 pb-10 pt-16 text-center">
-        <p className="mb-3 inline-block rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:bg-blue-950 dark:text-blue-300">
-          US property tax · UK council tax
-        </p>
-        <h1 className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
-          You could be overpaying<br />tax on your home.
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-neutral-600 dark:text-neutral-300">
-          The tax office often values homes too high — and almost nobody checks. Type your address and see if
-          you&apos;re one of them, with the proof on a map, in seconds.
-        </p>
-        <div className="mt-6 flex items-center justify-center gap-3">
-          <Link href="/app" className="rounded-full bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700">Check my home — free →</Link>
-          <a href="#how" className="rounded-full border border-black/15 px-6 py-3 font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10">See how it works</a>
+      <header className="hero-glow">
+        <div className="mx-auto max-w-3xl px-4 pb-16 pt-20 text-center">
+          <p className="mb-4 inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
+            US property tax · UK council tax
+          </p>
+          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl">
+            You could be overpaying<br />tax on your home.
+          </h1>
+          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
+            The tax office often values homes too high — and almost nobody checks. Type your address and see if
+            you&apos;re one of them, with the proof on a map, in seconds.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/app" className="w-full rounded-full bg-accent px-7 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg sm:w-auto">Check my home — free →</Link>
+            <a href="#how" className="w-full rounded-full border border-border bg-surface px-7 py-3.5 font-medium shadow-sm transition-colors hover:bg-surface-2 sm:w-auto">See how it works</a>
+          </div>
+          <p className="mt-4 text-xs text-muted">No sign-up. It&apos;s an estimate from public records, not tax advice.</p>
         </div>
-        <p className="mt-3 text-xs text-neutral-400">No sign-up. It&apos;s an estimate from public records, not tax advice.</p>
       </header>
 
       {/* Problem */}
-      <section className="mx-auto max-w-5xl px-4 py-10">
-        <h2 className="mb-6 text-center text-2xl font-bold">The quiet problem</h2>
+      <section className="mx-auto max-w-5xl px-4 py-16">
+        <Kicker>The quiet problem</Kicker>
+        <h2 className="mb-8 text-center text-3xl font-bold tracking-tight">Millions overpay. Almost nobody checks.</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <Stat big="30–60%" small={<>of US homes are over-assessed — valued too high for tax.</>} />
           <Stat big="400,000+" small="UK homes are in the wrong council tax band, stuck on a rushed 1991 valuation." />
@@ -93,19 +101,23 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="mx-auto max-w-5xl px-4 py-10">
-        <h2 className="mb-2 text-center text-2xl font-bold">How it works</h2>
-        <p className="mx-auto mb-6 max-w-xl text-center text-sm text-neutral-500">Three steps. No jargon, no sign-up.</p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Step n={1} title="Type your address">Just your home address — nothing else. We look it up in public property records.</Step>
-          <Step n={2} title="We compare it to real sales next door">We pull millions of real, recent sales of homes like yours nearby and work out what yours is really worth.</Step>
-          <Step n={3} title="See if you&apos;re overpaying">A clear verdict, a map of your street, and a ready-to-send appeal. What you do next is up to you.</Step>
+      <section id="how" className="border-y border-border bg-surface-2/40">
+        <div className="mx-auto max-w-5xl px-4 py-16">
+          <Kicker>How it works</Kicker>
+          <h2 className="mb-2 text-center text-3xl font-bold tracking-tight">Three steps. No jargon.</h2>
+          <p className="mx-auto mb-10 max-w-xl text-center text-muted">No sign-up, no spreadsheets — just your address.</p>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Step n={1} title="Type your address">Just your home address — nothing else. We look it up in public property records.</Step>
+            <Step n={2} title="We compare it to real sales next door">We pull millions of real, recent sales of homes like yours nearby and work out what yours is really worth.</Step>
+            <Step n={3} title="See if you're overpaying">A clear verdict, a map of your street, and a ready-to-send appeal. What you do next is up to you.</Step>
+          </div>
         </div>
       </section>
 
       {/* What you'll see */}
-      <section className="mx-auto max-w-5xl px-4 py-10">
-        <h2 className="mb-6 text-center text-2xl font-bold">What you&apos;ll get back — pictures, not paragraphs</h2>
+      <section className="mx-auto max-w-5xl px-4 py-16">
+        <Kicker>What you get back</Kicker>
+        <h2 className="mb-10 text-center text-3xl font-bold tracking-tight">Pictures, not paragraphs.</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Feature icon="🎯" title="The verdict">One line: are you overpaying, and by roughly how much a year.</Feature>
           <Feature icon="🗺️" title="Your street, on a map">Every home near you, coloured by how fairly it&apos;s taxed. Yours stands out.</Feature>
@@ -115,22 +127,21 @@ export default function Landing() {
       </section>
 
       {/* Two countries */}
-      <section className="mx-auto max-w-5xl px-4 py-10">
+      <section className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-black/10 p-6 dark:border-white/10">
-            <div className="text-2xl">🇺🇸</div>
-            <h3 className="mt-2 font-semibold">United States — property tax</h3>
-            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
-              Starting with Cook County (Chicago). We check if your home is{" "}
-              <span className="whitespace-nowrap">over-assessed
-                <InfoTip label="Over-assessed">The tax office thinks your home is worth more than it really is — so your tax bill is too high.</InfoTip>
-              </span>{" "}versus real nearby sales.
+          <div className="rounded-2xl border border-border bg-surface p-7 shadow-sm">
+            <div className="text-3xl">🇺🇸</div>
+            <h3 className="mt-3 text-lg font-semibold">United States — property tax</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
+              Starting with Cook County (Chicago). We check if your home is over-assessed
+              <InfoTip label="Over-assessed">The tax office thinks your home is worth more than it really is — so your tax bill is too high.</InfoTip>{" "}
+              versus real nearby sales.
             </p>
           </div>
-          <div className="rounded-2xl border border-black/10 p-6 dark:border-white/10">
-            <div className="text-2xl">🇬🇧</div>
-            <h3 className="mt-2 font-semibold">United Kingdom — council tax band</h3>
-            <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-300">
+          <div className="rounded-2xl border border-border bg-surface p-7 shadow-sm">
+            <div className="text-3xl">🇬🇧</div>
+            <h3 className="mt-3 text-lg font-semibold">United Kingdom — council tax band</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
               UK bands
               <InfoTip label="Council tax band">A letter (A–H) that decides your council tax. It was set from a quick 1991 valuation — and many are wrong.</InfoTip>{" "}
               still rely on a rushed 1991 valuation. We check if you&apos;re in too high a band — and owed a refund.
@@ -140,22 +151,26 @@ export default function Landing() {
       </section>
 
       {/* Trust */}
-      <section className="mx-auto max-w-3xl px-4 py-10 text-center">
-        <h2 className="text-2xl font-bold">Is this legit?</h2>
-        <p className="mx-auto mt-3 max-w-xl text-neutral-600 dark:text-neutral-300">
-          Yes — it&apos;s built on <strong>real public data</strong>, not guesses: 6 million+ UK property sales and
-          1.6 million Chicago parcels, straight from government records. It&apos;s an <strong>estimate, not tax advice</strong>,
-          and we show exactly how every number is worked out.
-        </p>
-        <Link href="/methodology" className="mt-4 inline-block rounded-full border border-black/15 px-5 py-2 text-sm font-medium hover:bg-black/5 dark:border-white/20 dark:hover:bg-white/10">
-          See our methodology &amp; sources
-        </Link>
+      <section className="border-y border-border bg-surface-2/40">
+        <div className="mx-auto max-w-3xl px-4 py-16 text-center">
+          <Kicker>Is this legit?</Kicker>
+          <h2 className="text-3xl font-bold tracking-tight">Built on real public data.</h2>
+          <p className="mx-auto mt-4 max-w-xl leading-relaxed text-muted">
+            Not guesses — <strong className="text-foreground">6 million+</strong> UK property sales and{" "}
+            <strong className="text-foreground">1.6 million</strong> Chicago parcels, straight from government records.
+            It&apos;s an estimate, not tax advice, and we show exactly how every number is worked out.
+          </p>
+          <Link href="/methodology" className="mt-6 inline-block rounded-full border border-border bg-surface px-6 py-2.5 text-sm font-medium shadow-sm transition-colors hover:bg-surface-2">
+            See our methodology &amp; sources
+          </Link>
+        </div>
       </section>
 
       {/* FAQ */}
-      <section className="mx-auto max-w-3xl px-4 py-10">
-        <h2 className="mb-6 text-center text-2xl font-bold">Common questions</h2>
-        <div className="space-y-2">
+      <section className="mx-auto max-w-3xl px-4 py-16">
+        <Kicker>Questions</Kicker>
+        <h2 className="mb-8 text-center text-3xl font-bold tracking-tight">Good to know</h2>
+        <div className="space-y-2.5">
           <Faq q="Is it free?" a="Yes. No sign-up, no payment, no catch." />
           <Faq q="Do I need to create an account?" a="No. Just type your address and get your answer." />
           <Faq q="Is my data safe?" a="We only use your address to look up public property records. We don't sell your data or do anything else with it." />
@@ -164,15 +179,18 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA + footer */}
-      <section className="mx-auto max-w-3xl px-4 py-12 text-center">
-        <h2 className="text-2xl font-bold">Check your home in 10 seconds</h2>
-        <Link href="/app" className="mt-4 inline-block rounded-full bg-blue-600 px-8 py-3 font-semibold text-white hover:bg-blue-700">Check my home — free →</Link>
+      {/* CTA */}
+      <section className="hero-glow">
+        <div className="mx-auto max-w-3xl px-4 py-20 text-center">
+          <h2 className="text-3xl font-bold tracking-tight">Check your home in 10 seconds.</h2>
+          <p className="mx-auto mt-3 max-w-md text-muted">Free, no sign-up. You might be owed thousands.</p>
+          <Link href="/app" className="mt-6 inline-block rounded-full bg-accent px-8 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg">Check my home — free →</Link>
+        </div>
       </section>
 
-      <footer className="border-t border-black/5 py-8 text-center text-xs text-neutral-400 dark:border-white/10">
+      <footer className="border-t border-border py-8 text-center text-xs text-muted">
         <p>An estimate from public records — not tax or legal advice. Not affiliated with any government body.</p>
-        <p className="mt-1">Built with ClickHouse + Trigger.dev · <Link href="/methodology" className="underline">Methodology</Link></p>
+        <p className="mt-1">Built with ClickHouse + Trigger.dev · <Link href="/methodology" className="underline underline-offset-2 hover:text-foreground">Methodology</Link></p>
       </footer>
     </div>
   );

@@ -6,6 +6,7 @@ import { useTriggerChatTransport } from "@trigger.dev/sdk/chat/react";
 import type { overtaxedChat } from "@/trigger/chat";
 import { mintChatAccessToken, startChatSession } from "@/app/actions";
 import { VizRenderer } from "./VizRenderer";
+import { ThemeToggle } from "./ThemeToggle";
 import type { VizSpec } from "@/lib/viz-catalog";
 
 const SUGGESTIONS = [
@@ -52,9 +53,10 @@ export function Chat() {
           <a href="/" className="text-lg font-bold hover:underline">Overtaxed</a>
           <p className="text-xs text-neutral-500">Type your address — see if you&apos;re overpaying. The answer is a picture, not a paragraph.</p>
         </div>
-        <nav className="flex items-center gap-2">
-          <a href="/methodology" className="rounded-full border border-black/10 px-3 py-1.5 text-sm hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5">Methodology</a>
-          <a href="/portfolio" className="rounded-full border border-black/10 px-3 py-1.5 text-sm hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5">My Portfolio</a>
+        <nav className="flex items-center gap-1.5">
+          <a href="/methodology" className="hidden rounded-full border border-border px-3 py-1.5 text-sm text-muted hover:bg-surface-2 hover:text-foreground sm:inline">Methodology</a>
+          <a href="/portfolio" className="rounded-full border border-border px-3 py-1.5 text-sm text-muted hover:bg-surface-2 hover:text-foreground">My Portfolio</a>
+          <ThemeToggle />
         </nav>
       </header>
 
@@ -63,7 +65,7 @@ export function Chat() {
           <div className="flex flex-wrap gap-2 pt-4">
             {SUGGESTIONS.map((s) => (
               <button key={s} onClick={() => send(s)}
-                className="rounded-full border border-black/10 px-3 py-1.5 text-sm hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5">
+                className="rounded-full border border-border bg-surface px-3.5 py-2 text-sm text-muted shadow-sm transition-colors hover:border-accent hover:text-foreground">
                 {s}
               </button>
             ))}
@@ -79,8 +81,8 @@ export function Chat() {
           return (
             <div key={m.id} className={m.role === "user" ? "text-right" : ""}>
               {text && (
-                <div className={`inline-block rounded-2xl px-3 py-2 text-sm ${
-                  m.role === "user" ? "bg-blue-600 text-white" : "bg-black/5 dark:bg-white/10"}`}>
+                <div className={`inline-block rounded-2xl px-3.5 py-2 text-sm ${
+                  m.role === "user" ? "bg-accent text-accent-fg" : "bg-surface-2"}`}>
                   {text}
                 </div>
               )}
@@ -93,10 +95,10 @@ export function Chat() {
       <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="flex gap-2 p-4">
         <input value={input} onChange={(e) => setInput(e.target.value)}
           placeholder="Enter a home address…"
-          className="flex-1 rounded-full border border-black/15 px-4 py-2 text-sm outline-none focus:border-blue-500 dark:border-white/20 dark:bg-neutral-900" />
+          className="flex-1 rounded-full border border-border bg-surface px-4 py-2.5 text-sm shadow-sm outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20" />
         {status === "streaming"
-          ? <button type="button" onClick={stop} className="rounded-full bg-neutral-200 px-4 py-2 text-sm dark:bg-neutral-700">Stop</button>
-          : <button type="submit" className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white">Send</button>}
+          ? <button type="button" onClick={stop} className="rounded-full bg-surface-2 px-4 py-2.5 text-sm font-medium">Stop</button>
+          : <button type="submit" className="rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-accent-fg shadow-sm transition-colors hover:bg-accent-hover">Send</button>}
       </form>
     </div>
   );
