@@ -216,6 +216,102 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
   return { spec, elapsedMs, rowsRead: n };
 }
 
+// ── UK council tax bands ────────────────────────────────────────────────────
+const BAND_INDEX: Record<string, number> = { A: 1, B: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8 };
+const BAND_LETTER = ["", "A", "B", "C", "D", "E", "F", "G", "H"];
+// council tax is proportional to Band D (national ratios)
+const BAND_FACTOR: Record<string, number> = { A: 6 / 9, B: 7 / 9, C: 8 / 9, D: 1, E: 11 / 9, F: 13 / 9, G: 15 / 9, H: 18 / 9 };
+const BAND_D_ANNUAL = 990; // representative inner-London Band D (£/yr)
+const HPI_1991: Record<string, number> = { "GREATER LONDON": 7.5 }; // sale→1991 divisor
+const BAND_1991: [string, number, number][] = [
+  ["A", 0, 40000], ["B", 40001, 52000], ["C", 52001, 68000], ["D", 68001, 88000],
+  ["E", 88001, 120000], ["F", 120001, 160000], ["G", 160001, 320000], ["H", 320001, 1e12],
+];
+const bandFor1991 = (v: number) => BAND_1991.find(([, lo, hi]) => v >= lo && v <= hi)?.[0] ?? "H";
+
+/** UK: is this home in the wrong council tax band? (neighbour comparison + 1991 back-cast) */
+export async function checkUkBand(addressQuery: string): Promise<{
+  found: boolean;
+  verdict?: VerdictCard;
+  street?: StreetMap;
+  elapsedMs: number;
+}> {
+  const { rows: subj, elapsedMs } = await query<{
+    address: string; postcode: string; band: string; lat: number; lng: number;
+  }>(
+    `SELECT address, postcode, band, lat, lng FROM overtaxed.uk_bands
+     WHERE positionCaseInsensitive(address, {q:String}) > 0
+     ORDER BY length(address) ASC LIMIT 1`,
+    { q: addressQuery },
+  );
+  if (!subj.length) return { found: false, elapsedMs };
+  const s = subj[0];
+
+  // neighbours: same postcode (or within 300m), excluding subject
+  const { rows: neigh } = await query<{ address: string; band: string; lat: number; lng: number }>(
+    `SELECT address, band, lat, lng FROM overtaxed.uk_bands
+     WHERE postcode = {pc:String} AND address != {addr:String}`,
+    { pc: s.postcode, addr: s.address },
+  );
+
+  // proposed band = median neighbour band
+  const neighIdx = neigh.map((n) => BAND_INDEX[n.band]).filter(Boolean).sort((a, b) => a - b);
+  const proposedIdx = neighIdx.length ? neighIdx[Math.floor(neighIdx.length / 2)] : BAND_INDEX[s.band];
+  const subjIdx = BAND_INDEX[s.band];
+
+  // corroboration: back-cast the recent sale to 1991
+  const { rows: sale } = await query<{ sp: number; region: string; saleYear: number }>(
+    `SELECT sale_price AS sp, region, toYear(sale_date) AS saleYear
+     FROM overtaxed.sales WHERE country='UK' AND address = {addr:String}
+     ORDER BY sale_date DESC LIMIT 1`,
+    { addr: s.address },
+  );
+  let estBand: string | null = null;
+  let saleYear = 2023;
+  if (sale.length) {
+    const factor = HPI_1991[sale[0].region.toUpperCase()] ?? 5.3;
+    estBand = bandFor1991(sale[0].sp / factor);
+    saleYear = sale[0].saleYear;
+  }
+
+  const overBanded = subjIdx > proposedIdx;
+  const proposedBand = BAND_LETTER[proposedIdx];
+  const annualOverpay = Math.max(0, Math.round(BAND_D_ANNUAL * (BAND_FACTOR[s.band] - BAND_FACTOR[proposedBand])));
+  const yearsOwned = Math.max(1, 2026 - saleYear);
+  const owedBack = annualOverpay * yearsOwned;
+
+  const verdict: VerdictCard = {
+    kind: "verdictCard",
+    headline: overBanded
+      ? `Wrong council tax band — overpaying ~£${annualOverpay.toLocaleString("en-GB")}/yr`
+      : `Your council tax band looks correct`,
+    overpaymentPerPeriod: annualOverpay,
+    period: "year",
+    currency: "GBP",
+    owedBack: overBanded ? owedBack : null,
+    confidence: neigh.length >= 3 ? "high" : neigh.length >= 1 ? "medium" : "low",
+    appealStrength: overBanded && neigh.length >= 3 ? "strong" : overBanded ? "moderate" : "none",
+    subtitle: `You're Band ${s.band}; ${neigh.length} nearby homes are Band ${proposedBand}` +
+      (estBand ? `, and your last sale back-casts to a ${estBand} 1991 value` : "") +
+      `. Refund backdated to ${saleYear} (~£${owedBack.toLocaleString("en-GB")}).`,
+  };
+
+  const toPoint = (address: string, band: string, lat: number, lng: number, isSubject: boolean) => ({
+    address: `${address} · Band ${band}`,
+    lat, lng, ratio: BAND_INDEX[band] / proposedIdx, isSubject,
+  });
+  const street: StreetMap = {
+    kind: "streetMap",
+    center: { lat: s.lat, lng: s.lng },
+    zoom: 17,
+    subject: toPoint(s.address, s.band, s.lat, s.lng, true),
+    neighbours: neigh.map((n) => toPoint(n.address, n.band, n.lat, n.lng, false)),
+    legend: "Council tax band vs neighbours (red = higher band than neighbours)",
+  };
+
+  return { found: true, verdict, street, elapsedMs };
+}
+
 /** Build a ready-to-file appeal packet from the over-assessment analysis. */
 export async function generateAppealPacket(pin: string): Promise<{ spec: AppealPacket | null; elapsedMs: number }> {
   const a = await analyzeProperty(pin);

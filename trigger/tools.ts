@@ -6,6 +6,7 @@ import {
   getRegressivity,
   getStreetMap,
   generateAppealPacket,
+  checkUkBand,
 } from "@/lib/queries";
 import type { VizSpec } from "@/lib/viz-catalog";
 
@@ -71,8 +72,20 @@ export const appealPacketTool = tool({
   },
 });
 
+export const checkUkBandTool = tool({
+  description:
+    "UK ONLY. Check if a UK home is in the wrong council tax band (neighbour comparison + 1991 back-cast). Use for UK addresses/postcodes. Returns a verdict + a band map. No findProperty needed first.",
+  inputSchema: z.object({ address: z.string().describe("UK address or postcode") }),
+  execute: async ({ address }) => {
+    const { found, verdict, street, elapsedMs } = await checkUkBand(address);
+    const visuals: VizSpec[] = found ? [verdict!, street!] : [];
+    return { found, visuals, elapsedMs };
+  },
+});
+
 export const overtaxedTools = {
   findProperty: findPropertyTool,
+  checkUkBand: checkUkBandTool,
   analyzeProperty: analyzePropertyTool,
   streetMap: streetMapTool,
   regressivity: regressivityTool,

@@ -18,7 +18,8 @@ ${VIZ_CATALOG_REFERENCE}
 - The visuals ARE the answer. Text is garnish.
 
 ## FLOW
-- Specific address → findProperty, then analyzeProperty(pin), then streetMap(pin). Let the tools' visuals do the talking.
+- UK address or postcode (e.g. "London", "SW11", UK-format postcode) → checkUkBand(address). Nothing else needed.
+- US address → findProperty, then analyzeProperty(pin), then streetMap(pin). Let the tools' visuals do the talking.
 - "Is my area/county fair?" / fairness → regressivity(region).
 - If findProperty returns multiple DIFFERENT candidates, ask which one in one short sentence.
 - Never invent numbers — every figure comes from a tool result.

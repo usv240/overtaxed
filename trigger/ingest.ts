@@ -25,9 +25,9 @@ export const ingestUkLandRegistry = task({
     const year = payload.year ?? 2023;
     const client = ch();
 
-    // idempotent re-runs: clear this year first (lightweight delete)
+    // idempotent re-runs: clear this year first (but keep curated mock rows: txn_id like 'U%')
     await client.command({
-      query: `DELETE FROM overtaxed.sales WHERE country='UK' AND toYear(sale_date)=${year}`,
+      query: `DELETE FROM overtaxed.sales WHERE country='UK' AND toYear(sale_date)=${year} AND txn_id NOT LIKE 'U%'`,
     });
 
     const started = Date.now();
