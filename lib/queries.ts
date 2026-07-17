@@ -335,6 +335,11 @@ export async function generateAppealPacket(pin: string): Promise<{ spec: AppealP
       { label: "Estimated annual saving", value: usd(m.annualOverpay) },
     ],
     filingUrl: "https://www.cookcountyassessor.com/online-appeals",
+    pin,
+    address: m.address,
+    country: "US",
+    region: m.region,
+    estimatedAnnualSaving: m.annualOverpay,
   };
   return { spec, elapsedMs: a.elapsedMs };
 }

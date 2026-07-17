@@ -106,6 +106,12 @@ export const AppealPacket = z.object({
   fields: z.array(z.object({ label: z.string(), value: z.string() })),
   downloadUrl: z.string().nullable().optional(),
   filingUrl: z.string().nullable().optional(),
+  // structured identity so the app can persist it (OLTP)
+  pin: z.string().nullable().optional(),
+  address: z.string().optional(),
+  country: z.string().optional(),
+  region: z.string().nullable().optional(),
+  estimatedAnnualSaving: z.number().optional(),
 });
 
 /** The discriminated union the agent must produce. */

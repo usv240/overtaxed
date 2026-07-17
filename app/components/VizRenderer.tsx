@@ -1,6 +1,8 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
+import { fileAppealAction } from "@/app/portfolio-actions";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
   ResponsiveContainer, Cell,
@@ -180,11 +182,47 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
               <div key={i} className="contents"><dt className="text-neutral-400">{f.label}</dt><dd>{f.value}</dd></div>
             ))}
           </dl>
-          {spec.filingUrl && <a href={spec.filingUrl} className="mt-2 inline-block text-sm text-blue-600 underline">File your appeal →</a>}
+          <div className="mt-3 flex items-center gap-3">
+            <FileAppealButton spec={spec} />
+            {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">official filing site →</a>}
+          </div>
         </Card>
       );
 
     default:
       return null;
   }
+}
+
+/** Files the appeal to Postgres (OLTP), then links to the portfolio. */
+function FileAppealButton({ spec }: { spec: Extract<VizSpec, { kind: "appealPacket" }> }) {
+  const [done, setDone] = useState(false);
+  const [pending, start] = useTransition();
+  if (done)
+    return (
+      <span className="text-sm text-green-600">
+        ✓ Filed &amp; saved · <a href="/portfolio" className="underline">view portfolio →</a>
+      </span>
+    );
+  return (
+    <button
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          await fileAppealAction({
+            pin: spec.pin ?? null,
+            address: spec.address ?? "",
+            country: spec.country ?? "US",
+            region: spec.region ?? null,
+            jurisdiction: spec.jurisdiction,
+            estimatedAnnualSaving: spec.estimatedAnnualSaving ?? 0,
+          });
+          setDone(true);
+        })
+      }
+      className="rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+    >
+      {pending ? "Filing…" : "File this appeal"}
+    </button>
+  );
 }
