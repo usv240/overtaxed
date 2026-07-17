@@ -49,7 +49,7 @@ export function Chat() {
     <div className="mx-auto flex h-dvh max-w-2xl flex-col">
       <header className="flex items-center justify-between px-4 py-3">
         <div>
-          <h1 className="text-lg font-bold">Overtaxed</h1>
+          <a href="/" className="text-lg font-bold hover:underline">Overtaxed</a>
           <p className="text-xs text-neutral-500">Type your address — see if you&apos;re overpaying. The answer is a picture, not a paragraph.</p>
         </div>
         <nav className="flex items-center gap-2">

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { fileAppealAction } from "@/app/portfolio-actions";
+import { InfoTip } from "./InfoTip";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
   ResponsiveContainer, Cell,
@@ -31,6 +32,10 @@ function Badge({ ms, rows }: { ms?: number; rows?: number }) {
   return (
     <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-black/5 px-2 py-0.5 text-xs text-neutral-500 dark:bg-white/10">
       ⚡ {ms} ms{rows != null ? ` · ${rows.toLocaleString()} rows` : ""} · ClickHouse
+      <InfoTip label="How fast?">
+        The time our database took to crunch this answer across {rows != null ? `${rows.toLocaleString()} ` : "millions of "}
+        real records. That&apos;s the speed that makes checking your whole street instant.
+      </InfoTip>
     </div>
   );
 }
@@ -53,11 +58,15 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
             <h3 className={`text-2xl font-bold ${over ? "text-red-600" : "text-green-600"}`}>
               {spec.headline}
             </h3>
-            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
               spec.appealStrength === "strong" ? "bg-red-100 text-red-700"
               : spec.appealStrength === "moderate" ? "bg-orange-100 text-orange-700"
               : "bg-neutral-100 text-neutral-600"}`}>
               appeal: {spec.appealStrength}
+              <InfoTip label="Appeal strength">
+                How likely a challenge is to succeed, based on how far your home&apos;s value sticks out from
+                similar homes nearby. &quot;Strong&quot; means you have solid evidence to ask for a lower bill.
+              </InfoTip>
             </span>
           </div>
           {spec.owedBack ? (
@@ -107,7 +116,16 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
           <h4 className="font-semibold">Is {spec.region} assessed fairly?</h4>
           <p className="text-sm text-neutral-500">
             PRD <strong className={spec.prd > 1.03 ? "text-red-600" : "text-green-600"}>{spec.prd}</strong>
+            <InfoTip label="PRD — the fairness score">
+              Price-Related Differential. Above <strong>1.03</strong> means cheaper homes are taxed at a higher
+              rate than expensive ones — i.e. the system quietly favours the wealthy. The official measure
+              assessors use.
+            </InfoTip>
             {" "}· COD <strong>{spec.cod}</strong>
+            <InfoTip label="COD — the consistency score">
+              Coefficient of Dispersion. How much assessments bounce around for similar homes — lower is fairer.
+              Assessors aim for under 15.
+            </InfoTip>
             {spec.nParcels != null && <span className="text-neutral-400"> · {spec.nParcels.toLocaleString()} parcels</span>}
             {spec.prd > 1.03 && <span className="ml-1 rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700">REGRESSIVE</span>}
           </p>

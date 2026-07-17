@@ -28,7 +28,7 @@ export default async function PortfolioPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="mb-1 flex items-center justify-between">
         <h1 className="text-2xl font-bold">My Portfolio</h1>
-        <Link href="/" className="text-sm text-blue-600 underline">← back to chat</Link>
+        <Link href="/app" className="text-sm text-blue-600 underline">← back to chat</Link>
       </div>
       <p className="mb-6 text-sm text-neutral-500">
         Your saved homes live in <strong>Postgres (OLTP)</strong>; each row is enriched live by a single{" "}
