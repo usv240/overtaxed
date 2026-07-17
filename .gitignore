@@ -1,0 +1,40 @@
+# secrets — NEVER commit
+.env
+.env.local
+.env.*.local
+*.pem
+
+# node
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+build/
+dist/
+
+# trigger.dev
+.trigger/
+
+# data (large raw downloads — do not commit)
+data/raw/
+*.csv
+*.parquet
+*.zip
+*.gz
+
+# logs / os / editor
+npm-debug.log*
+yarn-error.log*
+*.log
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# misc
+coverage/
+.turbo/
+.vercel/
