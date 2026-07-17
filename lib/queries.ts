@@ -129,14 +129,14 @@ export async function analyzeProperty(pin: string): Promise<{
     kind: "verdictCard",
     headline:
       annualOverpay > 0
-        ? `You're overpaying ~$${annualOverpay.toLocaleString()}/yr`
+        ? `You're overpaying ~$${annualOverpay.toLocaleString("en-US")}/yr`
         : `Your assessment looks fair`,
     overpaymentPerPeriod: annualOverpay,
     period: "year",
     currency: "USD",
     confidence: compRows.length >= 4 ? "high" : compRows.length >= 2 ? "medium" : "low",
     appealStrength: appealStrength as VerdictCard["appealStrength"],
-    subtitle: `Assessed $${r.assessed.toLocaleString()} vs recent sale $${r.recent_sale.toLocaleString()} (ratio ${r.ratio.toFixed(2)} vs neighbourhood median ${r.median_ratio.toFixed(2)}).`,
+    subtitle: `Assessed $${r.assessed.toLocaleString("en-US")} vs recent sale $${r.recent_sale.toLocaleString("en-US")} (ratio ${r.ratio.toFixed(2)} vs neighbourhood median ${r.median_ratio.toFixed(2)}).`,
   };
 
   const comps: CompsTable = {
