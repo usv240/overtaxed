@@ -1,10 +1,16 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
   ResponsiveContainer, Cell,
 } from "recharts";
 import type { VizSpec } from "@/lib/viz-catalog";
+
+const StreetMapView = dynamic(() => import("./StreetMapView"), {
+  ssr: false,
+  loading: () => <div className="h-72 w-full animate-pulse rounded-xl bg-black/5 dark:bg-white/10" />,
+});
 
 /** Colour a parcel by how over/under-assessed it is (ratio vs 1.0). */
 function ratioColor(ratio: number | null): string {
@@ -139,19 +145,18 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
     }
 
     case "streetMap":
-      // Full MapLibre map lands on Day 4; for now a ratio-coloured street list.
       return (
         <Card>
-          <h4 className="font-semibold">Your street, by assessment ratio</h4>
-          <div className="mt-2 grid grid-cols-1 gap-1">
-            {[spec.subject, ...spec.neighbours].map((p, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm">
-                <span className="inline-block h-3 w-3 rounded-full" style={{ background: ratioColor(p.ratio) }} />
-                <span className={p.isSubject ? "font-semibold" : ""}>{p.address}</span>
-                <span className="ml-auto text-neutral-500">{p.ratio != null ? p.ratio.toFixed(2) : "—"}{p.isSubject ? " ← you" : ""}</span>
-              </div>
-            ))}
+          <div className="mb-2 flex items-center justify-between">
+            <h4 className="font-semibold">Your street, by assessment ratio</h4>
+            <div className="flex items-center gap-2 text-[11px] text-neutral-500">
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full" style={{ background: "#dc2626" }} />over</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full" style={{ background: "#22c55e" }} />fair</span>
+              <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full" style={{ background: "#3b82f6" }} />under</span>
+            </div>
           </div>
+          <StreetMapView spec={spec} />
+          <p className="mt-1 text-xs text-neutral-500">{spec.legend} · your home is the large dot.</p>
           <Badge ms={ms} rows={rows} />
         </Card>
       );
