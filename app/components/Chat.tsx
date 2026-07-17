@@ -9,7 +9,7 @@ import { VizRenderer } from "./VizRenderer";
 import type { VizSpec } from "@/lib/viz-catalog";
 
 const SUGGESTIONS = [
-  "Am I overtaxed at 3212 N Racine Ave, Chicago?",
+  "Am I overtaxed at 4317 N Monticello Ave, Chicago?",
   "Is Cook County assessed fairly?",
   "Check 12 Lavender Sweep, London SW11",
 ];

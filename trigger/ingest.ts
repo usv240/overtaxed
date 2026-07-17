@@ -130,3 +130,47 @@ export const ingestCookCounty = task({
     return { year, sales: Number(counts.sales), assessments: Number(counts.assessments), elapsedSec: Math.round((Date.now() - started) / 1000) };
   },
 });
+
+/** Ingest Cook County parcel geo + address (Parcel Universe ⋈ Parcel Addresses). */
+export const ingestCookParcels = task({
+  id: "ingest-cook-parcels",
+  maxDuration: 3600,
+  run: async (payload: { year?: number }) => {
+    const year = payload.year ?? 2023;
+    const client = ch();
+    const started = Date.now();
+
+    const universeUrl = socrata(
+      "nj4t-kc8j",
+      "pin,lat,lon,class",
+      `year='${year}' AND starts_with(class,'2') AND lat IS NOT NULL`,
+      3_000_000,
+    );
+    const addressUrl = socrata(
+      "3723-97qp",
+      "pin,prop_address_full,prop_address_city_name,prop_address_zipcode_1",
+      `year='${year}' AND prop_address_full IS NOT NULL`,
+      3_000_000,
+    );
+
+    await client.command({ query: `TRUNCATE TABLE IF EXISTS overtaxed.parcels` });
+    await client.command({
+      query: `
+        INSERT INTO overtaxed.parcels (pin, lat, lng, address, zip, class)
+        SELECT u.pin, u.lat, u.lon,
+               concat(a.prop_address_full, ', ', a.prop_address_city_name, ' IL') AS address,
+               a.prop_address_zipcode_1 AS zip, u.class
+        FROM url('${universeUrl}', 'CSVWithNames', 'pin String, lat Float64, lon Float64, class String') AS u
+        INNER JOIN url('${addressUrl}', 'CSVWithNames', 'pin String, prop_address_full String, prop_address_city_name String, prop_address_zipcode_1 String') AS a
+          ON u.pin = a.pin
+        WHERE u.lat != 0 AND a.prop_address_full != ''`,
+    });
+
+    const rs = await client.query({
+      query: `SELECT count() AS c FROM overtaxed.parcels`,
+      format: "JSONEachRow",
+    });
+    const [{ c }] = (await rs.json()) as { c: string }[];
+    return { year, parcels: Number(c), elapsedSec: Math.round((Date.now() - started) / 1000) };
+  },
+});

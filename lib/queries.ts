@@ -29,20 +29,16 @@ export type Candidate = {
   postcode: string;
 };
 
-/** Resolve a free-text address to candidate parcels. */
+/** Resolve a free-text address to real Cook County parcels (via the parcels dimension). */
 export async function findProperty(q: string): Promise<{ candidates: Candidate[]; elapsedMs: number }> {
   const { rows, elapsedMs } = await query<Candidate>(
-    `SELECT pin, address, country, region, lat, lng, postcode
-     FROM (
-       SELECT pin, address, 'US' AS country, region, lat, lng, '' AS postcode
-       FROM overtaxed.assessments
-       UNION ALL
-       SELECT pin, address, country, region, lat, lng, postcode
-       FROM overtaxed.sales
-     )
-     WHERE positionCaseInsensitive(address, {q:String}) > 0
-     GROUP BY pin, address, country, region, lat, lng, postcode
-     ORDER BY length(address) ASC
+    `SELECT p.pin AS pin, p.address AS address, 'US' AS country, a.region AS region,
+            p.lat AS lat, p.lng AS lng, p.zip AS postcode
+     FROM overtaxed.parcels p
+     INNER JOIN overtaxed.assessments a ON a.pin = p.pin
+     WHERE positionCaseInsensitive(p.address, {q:String}) > 0
+     GROUP BY p.pin, p.address, a.region, p.lat, p.lng, p.zip
+     ORDER BY length(p.address) ASC
      LIMIT 8`,
     { q },
   );
@@ -77,26 +73,30 @@ export async function analyzeProperty(pin: string): Promise<{
        SELECT pin, argMax(sale_price, sale_date) AS sp
        FROM overtaxed.sales GROUP BY pin
      ),
-     subj AS (SELECT lat, lng FROM overtaxed.assessments WHERE pin = {pin:String} LIMIT 1),
+     subj AS (SELECT lat, lng FROM overtaxed.parcels WHERE pin = {pin:String} LIMIT 1),
      nbhd AS (
-       -- neighbourhood = parcels within 2km of the subject (local uniformity, not county-wide)
+       -- neighbourhood = sold parcels within 2km of the subject (local uniformity)
        SELECT quantileExact(0.5)(a.assessed_value / ls.sp) AS median_ratio
-       FROM overtaxed.assessments a INNER JOIN latest_sales ls USING (pin)
-       WHERE geoDistance((SELECT lng FROM subj), (SELECT lat FROM subj), a.lng, a.lat) < 2000
+       FROM overtaxed.parcels p
+       INNER JOIN overtaxed.assessments a ON a.pin = p.pin
+       INNER JOIN latest_sales ls ON ls.pin = p.pin
+       WHERE geoDistance((SELECT lng FROM subj), (SELECT lat FROM subj), p.lng, p.lat) < 2000
+         AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
      )
      SELECT
-       a.address                                   AS address,
+       p.address                                   AS address,
        a.region                                    AS region,
-       a.lat                                        AS lat,
-       a.lng                                        AS lng,
+       p.lat                                        AS lat,
+       p.lng                                        AS lng,
        a.assessed_value                            AS assessed,
        ls.sp                                        AS recent_sale,
        round(a.assessed_value / ls.sp, 4)          AS ratio,
        round((SELECT median_ratio FROM nbhd), 4)   AS median_ratio,
        toInt64(a.assessed_value - ls.sp)           AS over_assessed_by
-     FROM overtaxed.assessments a
-     INNER JOIN latest_sales ls USING (pin)
-     WHERE a.pin = {pin:String}
+     FROM overtaxed.parcels p
+     INNER JOIN overtaxed.assessments a ON a.pin = p.pin
+     INNER JOIN latest_sales ls ON ls.pin = p.pin
+     WHERE p.pin = {pin:String}
      LIMIT 1`,
     { pin },
   );
@@ -117,12 +117,13 @@ export async function analyzeProperty(pin: string): Promise<{
   const { rows: compRows } = await query<{
     address: string; salePrice: number; saleDate: string; distanceMi: number;
   }>(
-    `SELECT address,
-            sale_price                                        AS salePrice,
-            toString(sale_date)                               AS saleDate,
-            round(geoDistance({lng:Float64},{lat:Float64}, lng, lat)/1609.34, 3) AS distanceMi
-     FROM overtaxed.sales
-     WHERE region = {region:String} AND pin != {pin:String}
+    `SELECT p.address                                          AS address,
+            s.sale_price                                       AS salePrice,
+            toString(s.sale_date)                              AS saleDate,
+            round(geoDistance({lng:Float64},{lat:Float64}, p.lng, p.lat)/1609.34, 3) AS distanceMi
+     FROM overtaxed.sales s
+     INNER JOIN overtaxed.parcels p ON p.pin = s.pin
+     WHERE s.region = {region:String} AND s.pin != {pin:String}
      ORDER BY distanceMi ASC
      LIMIT 6`,
     { lng: r.lng, lat: r.lat, region: r.region, pin },
@@ -351,16 +352,18 @@ export async function getStreetMap(pin: string): Promise<{ spec: StreetMap | nul
     salePrice: number | null; assessedValue: number | null; isSubject: number;
   }>(
     `WITH latest_sales AS (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales GROUP BY pin),
-     subj AS (SELECT region, lat, lng FROM overtaxed.assessments WHERE pin = {pin:String} LIMIT 1)
-     SELECT a.address AS address, a.lat AS lat, a.lng AS lng,
+     subj AS (SELECT lat, lng FROM overtaxed.parcels WHERE pin = {pin:String} LIMIT 1)
+     SELECT p.address AS address, p.lat AS lat, p.lng AS lng,
             round(a.assessed_value / ls.sp, 4) AS ratio,
             ls.sp AS salePrice, a.assessed_value AS assessedValue,
-            a.pin = {pin:String} AS isSubject
-     FROM overtaxed.assessments a
-     INNER JOIN latest_sales ls USING (pin)
-     WHERE a.region = (SELECT region FROM subj)
-       AND geoDistance((SELECT lng FROM subj),(SELECT lat FROM subj), a.lng, a.lat) < 800
-     ORDER BY isSubject DESC`,
+            p.pin = {pin:String} AS isSubject
+     FROM overtaxed.parcels p
+     INNER JOIN overtaxed.assessments a ON a.pin = p.pin
+     INNER JOIN latest_sales ls ON ls.pin = p.pin
+     WHERE geoDistance((SELECT lng FROM subj),(SELECT lat FROM subj), p.lng, p.lat) < 500
+       AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+     ORDER BY isSubject DESC, geoDistance((SELECT lng FROM subj),(SELECT lat FROM subj), p.lng, p.lat) ASC
+     LIMIT 40`,
     { pin },
   );
   if (!rows.length) return { spec: null, elapsedMs };

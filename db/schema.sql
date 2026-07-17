@@ -41,6 +41,21 @@ ENGINE = ReplacingMergeTree
 ORDER BY (region, pin, tax_year);
 
 -- ─────────────────────────────────────────────────────────────────────────────
+-- parcels — geo + address dimension for US parcels (Parcel Universe ⋈ Addresses)
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS overtaxed.parcels
+(
+    pin      String,
+    lat      Float64,
+    lng      Float64,
+    address  String,
+    zip      String,
+    class    LowCardinality(String)
+)
+ENGINE = ReplacingMergeTree
+ORDER BY pin;
+
+-- ─────────────────────────────────────────────────────────────────────────────
 -- uk_bands — per-address council-tax band, filled by the live VOA lookup task
 -- ─────────────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS overtaxed.uk_bands

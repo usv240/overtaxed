@@ -28,7 +28,7 @@ function baseConfig() {
 
 /** Full-access client (ingestion, DDL). Use only in trusted server/task code. */
 export function ch(): ClickHouseClient {
-  if (!_ch) _ch = createClient(baseConfig());
+  if (!_ch) _ch = createClient({ ...baseConfig(), request_timeout: 600_000 });
   return _ch;
 }
 

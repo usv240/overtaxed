@@ -4,7 +4,7 @@ import { findProperty, analyzeProperty, getRegressivity, getStreetMap, generateA
 // Temporary end-to-end smoke test of the query layer through @clickhouse/client.
 // GET /api/smoke  → runs the same functions the agent tools call.
 export async function GET() {
-  const found = await findProperty("3212 N Racine");
+  const found = await findProperty("4317 N Monticello");
   const pin = found.candidates[0]?.pin;
   const analysis = pin ? await analyzeProperty(pin) : null;
   const street = pin ? await getStreetMap(pin) : null;
