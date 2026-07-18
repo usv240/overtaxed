@@ -130,18 +130,32 @@ export async function analyzeProperty(pin: string): Promise<{
     { lng: r.lng, lat: r.lat, region: r.region, pin },
   );
 
+  const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
   const verdict: VerdictCard = {
     kind: "verdictCard",
     headline:
       annualOverpay > 0
-        ? `You're overpaying ~$${annualOverpay.toLocaleString("en-US")}/yr`
+        ? `You're overpaying ~${usd(annualOverpay)}/yr`
         : `Your assessment looks fair`,
     overpaymentPerPeriod: annualOverpay,
     period: "year",
     currency: "USD",
     confidence: compRows.length >= 4 ? "high" : compRows.length >= 2 ? "medium" : "low",
     appealStrength: appealStrength as VerdictCard["appealStrength"],
-    subtitle: `Assessed $${r.assessed.toLocaleString("en-US")} vs recent sale $${r.recent_sale.toLocaleString("en-US")} (ratio ${r.ratio.toFixed(2)} vs neighbourhood median ${r.median_ratio.toFixed(2)}).`,
+    subtitle: `Assessed ${usd(r.assessed)} vs recent sale ${usd(r.recent_sale)} (ratio ${r.ratio.toFixed(2)} vs neighbourhood median ${r.median_ratio.toFixed(2)}).`,
+    simple:
+      annualOverpay > 0
+        ? `In plain terms: the tax office values your home at ${usd(r.assessed)}, but homes like yours nearby recently sold for about ${usd(r.recent_sale)}. Similar homes are taxed at roughly ${r.median_ratio.toFixed(2)}× their value — which points to a fair value near ${usd(fairAssessed)}. So your bill looks about ${usd(annualOverpay)} a year too high.`
+        : `In plain terms: your assessment lines up with what similar homes nearby actually sell for, so you don't appear to be overpaying.`,
+    technicalRows: [
+      { label: "Assessor's market value", value: usd(r.assessed) },
+      { label: "Most recent sale", value: usd(r.recent_sale) },
+      { label: "Your assessment ratio (assessed ÷ sale)", value: r.ratio.toFixed(3) },
+      { label: "Neighbourhood median ratio (≤2 km)", value: r.median_ratio.toFixed(3) },
+      { label: "Fair value at median ratio", value: usd(fairAssessed) },
+      { label: "Effective tax rate", value: `${(rate * 100).toFixed(1)}%` },
+      { label: "Annual overpay", value: `(${usd(r.assessed)} − ${usd(fairAssessed)}) × ${(rate * 100).toFixed(1)}% = ${usd(annualOverpay)}` },
+    ],
   };
 
   const comps: CompsTable = {
@@ -214,6 +228,10 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
       prd > 1.03 && lo != null && hi != null
         ? `Regressive (PRD ${prd}): cheapest homes assessed at ${lo}× value, priciest at ${hi}× — the poor pay a higher effective rate.`
         : `PRD ${prd} — within the fair range.`,
+    simple:
+      prd > 1.03 && lo != null && hi != null
+        ? `In plain terms: across ${n.toLocaleString("en-US")} homes here, the cheapest are taxed at about ${lo}× their value while the most expensive are taxed at only ${hi}× — so lower-value homes carry a heavier share. That's the opposite of fair.`
+        : `In plain terms: taxes here look broadly even between cheaper and pricier homes.`,
   };
   return { spec, elapsedMs, rowsRead: n };
 }
@@ -257,10 +275,12 @@ export async function checkUkBand(addressQuery: string): Promise<{
     { addr: s.address },
   );
   let estBand: string | null = null;
+  let est1991: number | null = null;
   let saleYear = 2023;
   if (sale.length) {
     const factor = UK_HPI_1991_DIVISOR[sale[0].region.toUpperCase()] ?? UK_DEFAULT_HPI_DIVISOR;
-    estBand = bandFor1991(sale[0].sp / factor);
+    est1991 = sale[0].sp / factor;
+    estBand = bandFor1991(est1991);
     saleYear = sale[0].saleYear;
   }
 
@@ -284,6 +304,22 @@ export async function checkUkBand(addressQuery: string): Promise<{
     subtitle: `You're Band ${s.band}; ${neigh.length} nearby homes are Band ${proposedBand}` +
       (estBand ? `, and your last sale back-casts to a ${estBand} 1991 value` : "") +
       `. Refund backdated to ${saleYear} (~£${owedBack.toLocaleString("en-GB")}).`,
+    simple: overBanded
+      ? `In plain terms: your home is in Band ${s.band}, but ${neigh.length} similar homes on your street are in the lower Band ${proposedBand}${estBand ? ` — and your last sale, wound back to 1991 prices, also points to Band ${proposedBand}` : ""}. So you're likely paying about £${annualOverpay.toLocaleString("en-GB")} a year too much, and could be owed roughly £${owedBack.toLocaleString("en-GB")} back.`
+      : `In plain terms: your band matches your neighbours and your home's likely 1991 value, so it looks correct.`,
+    technicalRows: [
+      { label: "Your current band", value: `Band ${s.band}` },
+      { label: "Neighbours' band (median)", value: `Band ${proposedBand}` },
+      ...(sale.length
+        ? [
+            { label: "Most recent sale", value: `£${sale[0].sp.toLocaleString("en-GB")}` },
+            { label: "Back-cast to 1991 value", value: `£${Math.round(est1991 ?? 0).toLocaleString("en-GB")} → Band ${estBand}` },
+          ]
+        : []),
+      { label: `Band D charge (${s.council || "council"})`, value: `£${bandDAnnual.toLocaleString("en-GB")}/yr` },
+      { label: "Annual overpay", value: `£D × (${UK_BAND_FACTOR[s.band].toFixed(3)} − ${UK_BAND_FACTOR[proposedBand].toFixed(3)}) = £${annualOverpay.toLocaleString("en-GB")}` },
+      { label: `Refund (backdated to ${saleYear})`, value: `£${owedBack.toLocaleString("en-GB")}` },
+    ],
   };
 
   const toPoint = (address: string, band: string, lat: number, lng: number, isSubject: boolean) => ({

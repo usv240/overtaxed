@@ -39,6 +39,10 @@ export const VerdictCard = z.object({
   confidence: Confidence,
   appealStrength: AppealStrength,
   subtitle: z.string().optional(),
+  /** plain-English explanation for non-technical users */
+  simple: z.string().optional(),
+  /** the underlying numbers / formula, for the "show the maths" view */
+  technicalRows: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
 });
 
 /** 2 — the street map: your home glows against your neighbours' ratios. */
@@ -70,6 +74,8 @@ export const RegressivityScatter = z.object({
     .optional(),
   trend: z.object({ slope: z.number(), intercept: z.number() }).optional(),
   caption: z.string().optional(),
+  /** plain-English explanation for non-technical users */
+  simple: z.string().optional(),
 });
 
 /** 4 — where you sit in the neighbourhood distribution. */

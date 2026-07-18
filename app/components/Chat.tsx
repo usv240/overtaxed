@@ -134,6 +134,20 @@ export function Chat() {
 
       {/* Composer */}
       <div className="border-t border-border bg-background/80 backdrop-blur-md">
+        {!empty && (
+          <div className="mx-auto flex max-w-3xl gap-2 overflow-x-auto px-4 pt-2.5 pb-0.5">
+            <span className="shrink-0 self-center text-xs text-muted">Try:</span>
+            {EXAMPLES.map((e) => (
+              <button
+                key={e.q}
+                onClick={() => send(e.q)}
+                className="shrink-0 whitespace-nowrap rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted shadow-sm transition-colors hover:border-accent hover:text-foreground"
+              >
+                {e.icon} {e.title}
+              </button>
+            ))}
+          </div>
+        )}
         <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="mx-auto flex max-w-3xl items-center gap-2 px-4 pt-3">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-border bg-surface px-4 py-1 shadow-sm focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
             <span className="text-muted">📍</span>

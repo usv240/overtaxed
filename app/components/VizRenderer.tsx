@@ -48,6 +48,40 @@ function Card({ children }: { children: React.ReactNode }) {
   );
 }
 
+/** Plain-English summary. */
+function Simple({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-2 flex gap-2 rounded-lg bg-accent-soft/60 px-3 py-2 text-sm leading-relaxed">
+      <span aria-hidden>💬</span>
+      <p>{children}</p>
+    </div>
+  );
+}
+
+/** Collapsible "show the maths" — the technical breakdown for anyone who wants it. */
+function TechDetails({ rows, children }: { rows?: { label: string; value: string }[]; children?: React.ReactNode }) {
+  if (!rows?.length && !children) return null;
+  return (
+    <details className="group mt-2 rounded-lg border border-border bg-surface-2/50 px-3 py-2">
+      <summary className="flex cursor-pointer list-none items-center text-xs font-medium text-muted marker:content-none">
+        <span className="mr-1 inline-block transition-transform group-open:rotate-90">▸</span>
+        Show the maths
+      </summary>
+      {rows && (
+        <dl className="mt-2 space-y-1 text-xs">
+          {rows.map((r, i) => (
+            <div key={i} className="flex justify-between gap-3 border-t border-border pt-1 first:border-0 first:pt-0">
+              <dt className="text-muted">{r.label}</dt>
+              <dd className="text-right font-medium tabular-nums">{r.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {children && <div className="mt-2 text-xs leading-relaxed text-muted">{children}</div>}
+    </details>
+  );
+}
+
 export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; rows?: number }) {
   switch (spec.kind) {
     case "verdictCard": {
@@ -74,8 +108,13 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
               Owed back: <strong>{money(spec.owedBack, spec.currency)}</strong>
             </p>
           ) : null}
-          {spec.subtitle && <p className="mt-2 text-sm text-muted">{spec.subtitle}</p>}
-          <p className="mt-2 text-xs text-muted">Confidence: {spec.confidence} · estimate from public records, not tax advice</p>
+          {spec.simple ? <Simple>{spec.simple}</Simple> : spec.subtitle && <p className="mt-2 text-sm text-muted">{spec.subtitle}</p>}
+          <TechDetails rows={spec.technicalRows} />
+          <p className="mt-2 text-xs text-muted">
+            Confidence: {spec.confidence}
+            <InfoTip label="Confidence">Based on how many recent comparable sales we found nearby. More comparables = higher confidence.</InfoTip>
+            {" "}· estimate from public records, not tax advice
+          </p>
           <Badge ms={ms} rows={rows} />
         </Card>
       );
@@ -158,7 +197,18 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
               ))}
             </div>
           )}
-          {spec.caption && <p className="mt-1 text-xs text-muted">{spec.caption}</p>}
+          {spec.simple && <Simple>{spec.simple}</Simple>}
+          <TechDetails
+            rows={[
+              { label: "PRD (Price-Related Differential)", value: `${spec.prd}  (fair ≤ 1.03)` },
+              { label: "COD (Coefficient of Dispersion)", value: `${spec.cod}  (assessors aim < 15)` },
+              { label: "Parcels analysed", value: (spec.nParcels ?? 0).toLocaleString() },
+            ]}
+          >
+            PRD = mean assessment ratio ÷ sale-weighted mean ratio; above 1.03 signals regressivity
+            (cheaper homes over-assessed). COD = average % deviation of ratios from the median — lower is
+            more uniform. Both are the standard IAAO uniformity metrics, computed here over every sold parcel.
+          </TechDetails>
           <Badge ms={ms} rows={rows} />
         </Card>
       );
