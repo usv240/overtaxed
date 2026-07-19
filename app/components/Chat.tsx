@@ -7,13 +7,14 @@ import type { overtaxedChat } from "@/trigger/chat";
 import { mintChatAccessToken, startChatSession } from "@/app/actions";
 import { VizRenderer } from "./VizRenderer";
 import { ThemeToggle } from "./ThemeToggle";
+import { Icon } from "./Icon";
 import type { VizSpec } from "@/lib/viz-catalog";
 
 const EXAMPLES = [
-  { icon: "🏠", title: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
-  { icon: "⚖️", title: "Is my county fair?", q: "Is Cook County assessed fairly?" },
-  { icon: "🇬🇧", title: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
-];
+  { icon: "home", title: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
+  { icon: "chart", title: "Is my county fair?", q: "Is Cook County assessed fairly?" },
+  { icon: "pin", title: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
+] as const;
 
 /** Pull VizSpecs (+ timing) out of a message's tool-output parts. */
 function extractVisuals(parts: any[]): { spec: VizSpec; ms?: number; rows?: number }[] {
@@ -84,7 +85,9 @@ export function Chat() {
         <div className="mx-auto max-w-3xl px-4 py-6">
           {empty ? (
             <div className="flex flex-col items-center pt-8 text-center sm:pt-16">
-              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-3xl shadow-sm">🏠</div>
+              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent shadow-sm">
+                <Icon name="home" size={30} />
+              </div>
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">What home should we check?</h1>
               <p className="mt-2 max-w-md text-muted">
                 Type any address — you&apos;ll get a picture back: a verdict, a map of your street, and a ready-to-file appeal. Not a wall of text.
@@ -96,7 +99,9 @@ export function Chat() {
                     onClick={() => send(e.q)}
                     className="group rounded-2xl border border-border bg-surface p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
                   >
-                    <div className="text-2xl">{e.icon}</div>
+                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                      <Icon name={e.icon} size={18} />
+                    </div>
                     <div className="mt-2.5 text-sm font-semibold">{e.title}</div>
                     <div className="mt-1 text-xs leading-snug text-muted">{e.q}</div>
                   </button>
@@ -141,16 +146,16 @@ export function Chat() {
               <button
                 key={e.q}
                 onClick={() => send(e.q)}
-                className="shrink-0 whitespace-nowrap rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted shadow-sm transition-colors hover:border-accent hover:text-foreground"
+                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted shadow-sm transition-colors hover:border-accent hover:text-foreground"
               >
-                {e.icon} {e.title}
+                <Icon name={e.icon} size={13} /> {e.title}
               </button>
             ))}
           </div>
         )}
         <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="mx-auto flex max-w-3xl items-center gap-2 px-4 pt-3">
           <div className="flex flex-1 items-center gap-2 rounded-full border border-border bg-surface px-4 py-1 shadow-sm focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
-            <span className="text-muted">📍</span>
+            <Icon name="pin" size={16} className="shrink-0 text-muted" />
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}

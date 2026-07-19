@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { fileAppealAction } from "@/app/portfolio-actions";
 import { InfoTip } from "./InfoTip";
+import { Icon } from "./Icon";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
   ResponsiveContainer, Cell,
@@ -31,7 +32,7 @@ function Badge({ ms, rows }: { ms?: number; rows?: number }) {
   if (ms == null) return null;
   return (
     <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-xs text-muted">
-      ⚡ {ms} ms{rows != null ? ` · ${rows.toLocaleString()} rows` : ""} · ClickHouse
+      <Icon name="zap" size={12} className="text-accent" /> {ms} ms{rows != null ? ` · ${rows.toLocaleString()} rows` : ""} · ClickHouse
       <InfoTip label="How fast?">
         The time our database took to crunch this answer across {rows != null ? `${rows.toLocaleString()} ` : "millions of "}
         real records. That&apos;s the speed that makes checking your whole street instant.
@@ -52,7 +53,7 @@ function Card({ children }: { children: React.ReactNode }) {
 function Simple({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-2 flex gap-2 rounded-lg bg-accent-soft/60 px-3 py-2 text-sm leading-relaxed">
-      <span aria-hidden>💬</span>
+      <Icon name="message" size={16} className="mt-0.5 shrink-0 text-accent" />
       <p>{children}</p>
     </div>
   );
@@ -252,7 +253,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
           </dl>
           <div className="mt-3 flex items-center gap-3">
             <FileAppealButton spec={spec} />
-            {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">official filing site →</a>}
+            {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-accent underline">official filing site →</a>}
           </div>
         </Card>
       );

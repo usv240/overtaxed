@@ -33,7 +33,7 @@ export default async function PortfolioPage() {
       <p className="mb-6 text-sm text-muted">
         Your saved homes live in <strong>Postgres (OLTP)</strong>; each row is enriched live by a single{" "}
         <strong>ClickHouse (OLAP)</strong> query that federates Postgres via <code>postgresql()</code> and joins the
-        assessment + sales tables. <span className="text-muted">⚡ {elapsedMs} ms</span>
+        assessment + sales tables. <span className="text-muted">{elapsedMs} ms</span>
       </p>
 
       <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">Saved properties (OLTP ⋈ OLAP)</h2>

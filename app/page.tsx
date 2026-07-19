@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { InfoTip } from "@/app/components/InfoTip";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
+import { Icon } from "@/app/components/Icon";
 
 export const metadata = {
   title: "Overtaxed — are you overpaying on your home?",
@@ -26,11 +27,13 @@ function Stat({ big, small }: { big: string; small: React.ReactNode }) {
   );
 }
 
-function Feature({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
+function Feature({ icon, title, children }: { icon: React.ComponentProps<typeof Icon>["name"]; title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div className="text-2xl">{icon}</div>
-      <h3 className="mt-3 font-semibold">{title}</h3>
+      <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+        <Icon name={icon} />
+      </div>
+      <h3 className="mt-3.5 font-semibold">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">{children}</p>
     </div>
   );
@@ -86,6 +89,13 @@ export default function Landing() {
             <a href="#how" className="w-full rounded-full border border-border bg-surface px-7 py-3.5 font-medium shadow-sm transition-colors hover:bg-surface-2 sm:w-auto">See how it works</a>
           </div>
           <p className="mt-4 text-xs text-muted">No sign-up. It&apos;s an estimate from public records, not tax advice.</p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted">
+            <span className="inline-flex items-center gap-1.5"><Icon name="check" size={14} className="text-accent" /> 6M+ UK sales</span>
+            <span className="text-border">•</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="check" size={14} className="text-accent" /> 1.6M Chicago parcels</span>
+            <span className="text-border">•</span>
+            <span className="inline-flex items-center gap-1.5"><Icon name="check" size={14} className="text-accent" /> 100% public records</span>
+          </div>
         </div>
       </header>
 
@@ -119,10 +129,10 @@ export default function Landing() {
         <Kicker>What you get back</Kicker>
         <h2 className="mb-10 text-center text-3xl font-bold tracking-tight">Pictures, not paragraphs.</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Feature icon="🎯" title="The verdict">One line: are you overpaying, and by roughly how much a year.</Feature>
-          <Feature icon="🗺️" title="Your street, on a map">Every home near you, coloured by how fairly it&apos;s taxed. Yours stands out.</Feature>
-          <Feature icon="⚖️" title="The fairness check">Whether your whole area quietly taxes cheaper homes harder than expensive ones.</Feature>
-          <Feature icon="📄" title="A ready-to-file appeal">Pre-filled with the evidence and the official link. Free to send.</Feature>
+          <Feature icon="target" title="The verdict">One line: are you overpaying, and by roughly how much a year.</Feature>
+          <Feature icon="pin" title="Your street, on a map">Every home near you, coloured by how fairly it&apos;s taxed. Yours stands out.</Feature>
+          <Feature icon="chart" title="The fairness check">Whether your whole area quietly taxes cheaper homes harder than expensive ones.</Feature>
+          <Feature icon="file" title="A ready-to-file appeal">Pre-filled with the evidence and the official link. Free to send.</Feature>
         </div>
       </section>
 
@@ -130,7 +140,7 @@ export default function Landing() {
       <section className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-border bg-surface p-7 shadow-sm">
-            <div className="text-3xl">🇺🇸</div>
+            <span className="inline-flex items-center rounded-md border border-border bg-surface-2 px-2 py-1 text-xs font-semibold tracking-wide text-muted">US</span>
             <h3 className="mt-3 text-lg font-semibold">United States — property tax</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
               Starting with Cook County (Chicago). We check if your home is over-assessed
@@ -139,7 +149,7 @@ export default function Landing() {
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-surface p-7 shadow-sm">
-            <div className="text-3xl">🇬🇧</div>
+            <span className="inline-flex items-center rounded-md border border-border bg-surface-2 px-2 py-1 text-xs font-semibold tracking-wide text-muted">UK</span>
             <h3 className="mt-3 text-lg font-semibold">United Kingdom — council tax band</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
               UK bands
