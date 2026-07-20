@@ -174,16 +174,24 @@ export async function analyzeProperty(pin: string): Promise<{
   };
 }
 
-/** THE INNOVATION: regressivity (PRD/COD) + scatter + price-quintile gradient. */
-export async function getRegressivity(region: string): Promise<{ spec: RegressivityScatter; elapsedMs: number; rowsRead: number }> {
-  // shared join + sanity filters (arms-length ratio range, real sale prices)
+/** THE INNOVATION: regressivity (PRD/COD) + scatter + price-quintile gradient.
+ *  Optional price band lets the UI slider re-explore the data live. */
+export async function getRegressivity(
+  region: string,
+  opts: { priceMin?: number; priceMax?: number } = {},
+): Promise<{ spec: RegressivityScatter; elapsedMs: number; rowsRead: number }> {
+  const priceMin = Math.max(1, Math.round(opts.priceMin ?? 20000));
+  const priceMax = Math.round(opts.priceMax ?? 100_000_000);
+  const p = { region, priceMin, priceMax };
+  // shared join + sanity filters (arms-length ratio range, price band)
   const CTE = `
     WITH ratios AS (
       SELECT a.assessed_value AS av, ls.sp AS sp, a.assessed_value / ls.sp AS ratio
       FROM overtaxed.assessments a
       INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp
                   FROM overtaxed.sales WHERE region = {region:String} GROUP BY pin) ls USING (pin)
-      WHERE a.region = {region:String} AND ls.sp > 20000 AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+      WHERE a.region = {region:String} AND ls.sp BETWEEN {priceMin:UInt64} AND {priceMax:UInt64}
+        AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
     )`;
 
   const { rows: stat, elapsedMs } = await query<{ prd: number; cod: number; n: number }>(
@@ -192,13 +200,13 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
             round(avg(ratio)/(sum(av)/sum(sp)), 4) AS prd,
             round(100*avg(abs(ratio - med.m))/any(med.m), 2) AS cod
      FROM ratios CROSS JOIN (SELECT quantileExact(0.5)(ratio) AS m FROM ratios) AS med`,
-    { region },
+    p,
   );
 
   // a random sample of points so the browser scatter stays light at scale
   const { rows: points } = await query<{ salePrice: number; ratio: number }>(
     `${CTE} SELECT sp AS salePrice, round(ratio, 4) AS ratio FROM ratios ORDER BY rand() LIMIT 500`,
-    { region },
+    p,
   );
 
   // the regressivity gradient: avg ratio by sale-price quintile
@@ -207,7 +215,7 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
                    "SELECT ls.sp AS sp, a.assessed_value / ls.sp AS ratio, ntile(5) OVER (ORDER BY ls.sp) AS q")}
      SELECT q AS quintile, round(avg(sp)) AS avgPrice, round(avg(ratio), 3) AS avgRatio
      FROM ratios GROUP BY q ORDER BY q`,
-    { region },
+    p,
   );
 
   // quantified dollar harm (the impact story) — computed live over the sold parcels
@@ -219,7 +227,7 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
        SELECT a.assessed_value AS av, ls.sp AS sp
        FROM overtaxed.assessments a
        INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales WHERE region = {region:String} GROUP BY pin) ls USING (pin)
-       WHERE a.region = {region:String} AND ls.sp > 20000 AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+       WHERE a.region = {region:String} AND ls.sp BETWEEN {priceMin:UInt64} AND {priceMax:UInt64} AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
      ),
      f AS (SELECT sum(av)/sum(sp) AS fair FROM base),
      med AS (SELECT quantileExact(0.5)(sp) AS m FROM base)
@@ -229,7 +237,7 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
             round(avgIf(greatest(0, av - sp*(SELECT fair FROM f))*{rate:Float64}, av > sp*(SELECT fair FROM f) AND sp < (SELECT m FROM med))) AS avgOverpayBelow,
             (SELECT count() FROM overtaxed.parcels) AS totalParcels
      FROM base`,
-    { region, rate },
+    { ...p, rate },
   );
 
   const prd = stat[0]?.prd ?? 1;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { fileAppealAction } from "@/app/portfolio-actions";
 import { InfoTip } from "./InfoTip";
@@ -149,86 +149,8 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
         </Card>
       );
 
-    case "regressivityScatter": {
-      const data = spec.points.map((p) => ({ ...p, ratioPct: p.ratio }));
-      return (
-        <Card>
-          <h4 className="font-semibold">Is {spec.region} assessed fairly?</h4>
-          <p className="text-sm text-muted">
-            PRD <strong className={spec.prd > 1.03 ? "text-neg" : "text-pos"}>{spec.prd}</strong>
-            <InfoTip label="PRD — the fairness score">
-              Price-Related Differential. Above <strong>1.03</strong> means cheaper homes are taxed at a higher
-              rate than expensive ones — i.e. the system quietly favours the wealthy. The official measure
-              assessors use.
-            </InfoTip>
-            {" "}· COD <strong>{spec.cod}</strong>
-            <InfoTip label="COD — the consistency score">
-              Coefficient of Dispersion. How much assessments bounce around for similar homes — lower is fairer.
-              Assessors aim for under 15.
-            </InfoTip>
-            {spec.nParcels != null && <span className="text-muted"> · {spec.nParcels.toLocaleString()} parcels</span>}
-            {spec.prd > 1.03 && <span className="ml-1 rounded bg-neg/10 px-1.5 py-0.5 text-xs text-neg">REGRESSIVE</span>}
-          </p>
-          <div className="mt-2 h-64 w-full">
-            <ResponsiveContainer>
-              <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis type="number" dataKey="salePrice" name="Sale price"
-                  tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} fontSize={11} />
-                <YAxis type="number" dataKey="ratioPct" name="Assessment ratio"
-                  domain={["auto", "auto"]} fontSize={11} />
-                <ReferenceLine y={1} stroke="#22c55e" strokeDasharray="4 4" label={{ value: "fair", fontSize: 10 }} />
-                <Tooltip formatter={(v, n) => (n === "Sale price" ? money(Number(v)) : Number(v).toFixed(3))} />
-                <Scatter data={data} name="Homes">
-                  {data.map((d, i) => <Cell key={i} fill={ratioColor(d.ratio)} />)}
-                </Scatter>
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
-          {spec.quintiles && spec.quintiles.length > 0 && (
-            <div className="mt-1 flex items-end gap-1">
-              {spec.quintiles.map((q) => (
-                <div key={q.quintile} className="flex-1 text-center">
-                  <div className="flex h-14 items-end">
-                    <div className="w-full rounded-t" style={{ height: `${Math.min(100, q.avgRatio * 80)}%`, background: ratioColor(q.avgRatio) }} />
-                  </div>
-                  <div className="text-[10px] text-muted">${(q.avgPrice / 1000).toFixed(0)}k</div>
-                  <div className="text-[10px] font-semibold">{q.avgRatio}×</div>
-                </div>
-              ))}
-            </div>
-          )}
-          {spec.simple && <Simple>{spec.simple}</Simple>}
-          {spec.impact && (
-            <div className="mt-3 rounded-xl border border-neg/25 bg-neg/5 p-3">
-              <div className="flex items-center gap-1.5 text-sm font-semibold text-neg">
-                <Icon name="target" size={16} /> The human cost
-              </div>
-              <p className="mt-1.5 text-sm leading-relaxed">
-                <strong>{spec.impact.overAssessedPct}%</strong> of homes here are over-assessed versus a fair system.
-                Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong> a
-                year — and that&apos;s only from the {spec.impact.soldSample.toLocaleString()} homes sold last year.
-                At full county scale that&apos;s an estimated <strong>{money(spec.impact.estCountyAnnual)}/yr</strong>{" "}
-                shifted onto them. The typical over-assessed lower-value home pays{" "}
-                <strong>{money(spec.impact.avgOverpayBelow)}</strong> too much.
-              </p>
-            </div>
-          )}
-          <TechDetails
-            rows={[
-              { label: "PRD (Price-Related Differential)", value: `${spec.prd}  (fair ≤ 1.03)` },
-              { label: "COD (Coefficient of Dispersion)", value: `${spec.cod}  (assessors aim < 15)` },
-              { label: "Parcels analysed", value: (spec.nParcels ?? 0).toLocaleString() },
-            ]}
-          >
-            PRD = mean assessment ratio ÷ sale-weighted mean ratio; above 1.03 signals regressivity
-            (cheaper homes over-assessed). COD = average % deviation of ratios from the median — lower is
-            more uniform. Both are the standard IAAO uniformity metrics, computed here over every sold parcel.
-          </TechDetails>
-          <Badge ms={ms} rows={rows} />
-        </Card>
-      );
-    }
+    case "regressivityScatter":
+      return <RegressivityCard initial={spec} initialMs={ms} rows={rows} />;
 
     case "streetMap":
       return (
@@ -304,9 +226,127 @@ function FileAppealButton({ spec }: { spec: Extract<VizSpec, { kind: "appealPack
           setDone(true);
         })
       }
-      className="rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-50"
+      className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-accent-fg shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Filing…" : "File this appeal"}
     </button>
+  );
+}
+
+/** Interactive regressivity — a price slider that recomputes PRD/COD/impact live over ClickHouse. */
+function RegressivityCard({
+  initial, initialMs, rows,
+}: { initial: Extract<VizSpec, { kind: "regressivityScatter" }>; initialMs?: number; rows?: number }) {
+  const [spec, setSpec] = useState(initial);
+  const [ms, setMs] = useState(initialMs);
+  const [minPrice, setMinPrice] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const onSlide = (val: number) => {
+    setMinPrice(val);
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/regressivity?region=${encodeURIComponent(initial.region)}&priceMin=${val}`);
+        const j = await res.json();
+        if (j?.spec) { setSpec(j.spec); setMs(j.elapsedMs); }
+      } catch { /* ignore */ } finally { setLoading(false); }
+    }, 260);
+  };
+
+  const data = spec.points.map((p) => ({ ...p, ratioPct: p.ratio }));
+  return (
+    <Card>
+      <h4 className="font-semibold">Is {spec.region} assessed fairly?</h4>
+      <p className="text-sm text-muted">
+        PRD <strong className={spec.prd > 1.03 ? "text-neg" : "text-pos"}>{spec.prd}</strong>
+        <InfoTip label="PRD — the fairness score">
+          Price-Related Differential. Above <strong>1.03</strong> means cheaper homes are taxed at a higher rate
+          than expensive ones — the system quietly favours the wealthy. The official measure assessors use.
+        </InfoTip>
+        {" "}· COD <strong>{spec.cod}</strong>
+        <InfoTip label="COD — the consistency score">
+          Coefficient of Dispersion — how much assessments bounce around for similar homes. Lower is fairer;
+          assessors aim for under 15.
+        </InfoTip>
+        {spec.nParcels != null && <span className="text-muted"> · {spec.nParcels.toLocaleString()} parcels</span>}
+        {spec.prd > 1.03 && <span className="ml-1 rounded bg-neg/10 px-1.5 py-0.5 text-xs text-neg">REGRESSIVE</span>}
+      </p>
+
+      {/* interactive explorer */}
+      <div className="mt-2 rounded-lg border border-border bg-surface-2/50 px-3 py-2">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-muted">Explore: only homes priced over <strong className="text-foreground">${(minPrice / 1000).toFixed(0)}k</strong></span>
+          <span className="inline-flex items-center gap-1 text-muted">{loading && <Icon name="zap" size={12} className="animate-pulse text-accent" />}{loading ? "recomputing…" : "live"}</span>
+        </div>
+        <input
+          type="range" min={0} max={1_000_000} step={25_000} value={minPrice}
+          onChange={(e) => onSlide(Number(e.target.value))}
+          className="mt-1.5 w-full accent-[var(--accent)]"
+          aria-label="Minimum home price"
+        />
+        <p className="text-[11px] text-muted">Drag up to watch the unfairness shrink among pricier homes — each move recomputes over ClickHouse.</p>
+      </div>
+
+      <div className="mt-2 h-64 w-full">
+        <ResponsiveContainer>
+          <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+            <XAxis type="number" dataKey="salePrice" name="Sale price" tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} fontSize={11} />
+            <YAxis type="number" dataKey="ratioPct" name="Assessment ratio" domain={["auto", "auto"]} fontSize={11} />
+            <ReferenceLine y={1} stroke="#22c55e" strokeDasharray="4 4" label={{ value: "fair", fontSize: 10 }} />
+            <Tooltip formatter={(v, n) => (n === "Sale price" ? money(Number(v)) : Number(v).toFixed(3))} />
+            <Scatter data={data} name="Homes">
+              {data.map((d, i) => <Cell key={i} fill={ratioColor(d.ratio)} />)}
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+
+      {spec.quintiles && spec.quintiles.length > 0 && (
+        <div className="mt-1 flex items-end gap-1">
+          {spec.quintiles.map((q) => (
+            <div key={q.quintile} className="flex-1 text-center">
+              <div className="flex h-14 items-end">
+                <div className="w-full rounded-t" style={{ height: `${Math.min(100, q.avgRatio * 80)}%`, background: ratioColor(q.avgRatio) }} />
+              </div>
+              <div className="text-[10px] text-muted">${(q.avgPrice / 1000).toFixed(0)}k</div>
+              <div className="text-[10px] font-semibold">{q.avgRatio}×</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {spec.simple && <Simple>{spec.simple}</Simple>}
+      {spec.impact && (
+        <div className="mt-3 rounded-xl border border-neg/25 bg-neg/5 p-3">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-neg">
+            <Icon name="target" size={16} /> The human cost
+          </div>
+          <p className="mt-1.5 text-sm leading-relaxed">
+            <strong>{spec.impact.overAssessedPct}%</strong> of homes here are over-assessed versus a fair system.
+            Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong> a year —
+            and that&apos;s only from the {spec.impact.soldSample.toLocaleString()} homes sold last year. At full county
+            scale that&apos;s an estimated <strong>{money(spec.impact.estCountyAnnual)}/yr</strong> shifted onto them.
+            The typical over-assessed lower-value home pays <strong>{money(spec.impact.avgOverpayBelow)}</strong> too much.
+          </p>
+        </div>
+      )}
+
+      <TechDetails
+        rows={[
+          { label: "PRD (Price-Related Differential)", value: `${spec.prd}  (fair ≤ 1.03)` },
+          { label: "COD (Coefficient of Dispersion)", value: `${spec.cod}  (assessors aim < 15)` },
+          { label: "Parcels analysed", value: (spec.nParcels ?? 0).toLocaleString() },
+        ]}
+      >
+        PRD = mean assessment ratio ÷ sale-weighted mean ratio; above 1.03 signals regressivity. COD = average %
+        deviation of ratios from the median. Both are the standard IAAO uniformity metrics, computed live over
+        every sold parcel — and re-computed each time you move the slider.
+      </TechDetails>
+      <Badge ms={ms} rows={rows ?? spec.nParcels} />
+    </Card>
   );
 }
