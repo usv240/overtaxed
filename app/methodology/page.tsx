@@ -50,7 +50,7 @@ export default async function MethodologyPage() {
         <li>• <strong>Comparable sales</strong> — nearest arms-length sales by <code>geoDistance()</code>.</li>
         <li>• <strong>Over-assessment</strong> — your assessment ratio vs the local (≤2km) neighbourhood median.</li>
         <li>• <strong>Regressivity</strong> — <strong>PRD</strong> (Price-Related Differential) and <strong>COD</strong> (Coefficient of Dispersion), the standard IAAO uniformity metrics, over every sold parcel in the county.</li>
-        <li>• <strong>UK band check</strong> — neighbour-band comparison + back-cast of your sale price to its 1991 value.</li>
+        <li>• <strong>UK band check</strong> — <strong>real bands fetched live from the VOA</strong> band-check service for your postcode (cached in ClickHouse), then a neighbour-band comparison + back-cast of local sale prices to their 1991 value.</li>
       </ul>
 
       <h2 className="mb-1 mt-6 font-semibold">Reference inputs (statutory / published — with sources)</h2>
@@ -67,7 +67,7 @@ export default async function MethodologyPage() {
       <h2 className="mb-1 mt-6 font-semibold">Honest limitations</h2>
       <ul className="space-y-1 text-sm text-muted">
         <li>• Estimates depend on recent comparable sales; sparse areas get lower confidence (shown on the verdict).</li>
-        <li>• UK per-property council-tax bands are not published in bulk (VOA restriction). We demonstrate the neighbour-comparison method on a curated block; production uses an on-demand VOA lookup (a Trigger.dev task).</li>
+        <li>• UK per-property bands aren&apos;t published in bulk, so we fetch them <strong>live from the VOA&apos;s public band-check service on demand</strong> (real bands for any postcode) and cache them in ClickHouse. The &quot;12 Lavender Sweep&quot; example is a curated illustration of the over-banding scenario; any real UK postcode returns live data.</li>
         <li>• Not affiliated with any assessor, the VOA, or any government body.</li>
       </ul>
     </div>

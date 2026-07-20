@@ -25,7 +25,7 @@ Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026** — th
 ## Data actually loaded (all real, all live)
 
 - **US — Cook County Assessor Open Data:** ~1.59M residential **parcels** (geo + address, from Parcel Universe ⋈ Parcel Addresses), ~1.59M **assessments**, ~69k arms-length **sales**.
-- **UK — [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads):** **6.06M** real sales (2019–2024, Open Government Licence).
+- **UK — [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads):** **6.06M** real sales (2019–2024, Open Government Licence). Council-tax **bands are fetched live from the VOA** band-check service per postcode (no bulk dataset exists) and cached in ClickHouse.
 - Reference inputs (tax rates, statutory band ratios, 1991 baselines) are consolidated + sourced in [`lib/assumptions.ts`](lib/assumptions.ts) and shown at **/methodology**.
 
 ## How ClickHouse & Trigger.dev are used (both load-bearing)

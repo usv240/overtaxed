@@ -11,7 +11,7 @@ export async function GET(req: Request) {
   const street = pin ? await getStreetMap(pin) : null;
   const appeal = pin ? await generateAppealPacket(pin) : null;
   const regressivity = await getRegressivity("Cook County");
-  const uk = await checkUkBand("12 Lavender Sweep");
+  const uk = await checkUkBand(new URL(req.url).searchParams.get("uk") || "12 Lavender Sweep");
 
   return NextResponse.json({
     findProperty: { count: found.candidates.length, first: found.candidates[0], ms: found.elapsedMs },

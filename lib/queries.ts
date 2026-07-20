@@ -1,4 +1,5 @@
-import { query } from "@/lib/clickhouse";
+import { query, ch } from "@/lib/clickhouse";
+import { fetchVoaBands, postcodeCentroid } from "@/lib/voa";
 import {
   US_EFFECTIVE_TAX_RATE, US_DEFAULT_EFFECTIVE_RATE,
   UK_BAND_FACTOR, UK_BAND_D_ANNUAL, UK_DEFAULT_BAND_D_ANNUAL,
@@ -296,21 +297,75 @@ export async function getRegressivity(
   return { spec, elapsedMs, rowsRead: n };
 }
 
-/** UK: is this home in the wrong council tax band? (neighbour comparison + 1991 back-cast) */
+const extractPostcode = (s: string): string | null => {
+  const m = s.toUpperCase().match(/([A-Z]{1,2}\d[A-Z\d]?)\s*(\d[A-Z]{2})/);
+  return m ? `${m[1]} ${m[2]}` : null;
+};
+
+/** Live: fetch real VOA bands for a postcode and cache them into ClickHouse. */
+async function ensureUkBandsCached(postcode: string): Promise<number> {
+  const client = ch();
+  const rs = await client.query({
+    query: `SELECT count() AS c FROM overtaxed.uk_bands WHERE postcode = {pc:String}`,
+    query_params: { pc: postcode }, format: "JSONEachRow",
+  });
+  const [{ c }] = (await rs.json()) as { c: string }[];
+  if (Number(c) > 0) return Number(c);
+
+  const [bands, centroid] = await Promise.all([fetchVoaBands(postcode), postcodeCentroid(postcode)]);
+  if (!bands.length) return 0;
+  const base = centroid ?? { lat: 51.5, lng: -0.12 };
+  const rows = bands.map((b, i) => ({
+    postcode,
+    address: b.address,
+    band: b.band,
+    lat: base.lat + ((i % 6) - 3) * 0.00012,   // spread around the postcode centroid for the map
+    lng: base.lng + (Math.floor(i / 6) - 2) * 0.00016,
+    council: b.council,
+  }));
+  await client.insert({
+    table: "overtaxed.uk_bands", values: rows, format: "JSONEachRow",
+    clickhouse_settings: { async_insert: 0 },
+  });
+  return rows.length;
+}
+
+/** UK: is this home in the wrong council tax band? (LIVE VOA bands + neighbour comparison + 1991 back-cast) */
 export async function checkUkBand(addressQuery: string): Promise<{
   found: boolean;
   verdict?: VerdictCard;
   street?: StreetMap;
   elapsedMs: number;
 }> {
-  const { rows: subj, elapsedMs } = await query<{
+  // live: make sure we have real VOA bands for this postcode (cached in ClickHouse)
+  const pc = extractPostcode(addressQuery);
+  if (pc) { try { await ensureUkBandsCached(pc); } catch { /* fall back to whatever's cached */ } }
+  const houseNo = addressQuery.match(/\b\d+\b/)?.[0] ?? "";
+
+  const selCols = `address, postcode, band, lat, lng, council`;
+  // 1) exact-ish substring match; 2) same postcode + house number; 3) anything in the postcode
+  let { rows: subj, elapsedMs } = await query<{
     address: string; postcode: string; band: string; lat: number; lng: number; council: string;
   }>(
-    `SELECT address, postcode, band, lat, lng, council FROM overtaxed.uk_bands
+    `SELECT ${selCols} FROM overtaxed.uk_bands
      WHERE positionCaseInsensitive(address, {q:String}) > 0
      ORDER BY length(address) ASC LIMIT 1`,
     { q: addressQuery },
   );
+  if (!subj.length && pc && houseNo) {
+    subj = (await query(
+      `SELECT ${selCols} FROM overtaxed.uk_bands
+       WHERE postcode = {pc:String} AND match(address, {pat:String})
+       ORDER BY length(address) ASC LIMIT 1`,
+      { pc, pat: `(^|[^0-9])${houseNo}([^0-9]|$)` },
+    )).rows as typeof subj;
+  }
+  if (!subj.length && pc) {
+    subj = (await query(
+      `SELECT ${selCols} FROM overtaxed.uk_bands WHERE postcode = {pc:String} ORDER BY length(address) ASC LIMIT 1`,
+      { pc },
+    )).rows as typeof subj;
+  }
   if (!subj.length) return { found: false, elapsedMs };
   const s = subj[0];
   const bandDAnnual = UK_BAND_D_ANNUAL[s.council] ?? UK_DEFAULT_BAND_D_ANNUAL;
@@ -327,13 +382,22 @@ export async function checkUkBand(addressQuery: string): Promise<{
   const proposedIdx = neighIdx.length ? neighIdx[Math.floor(neighIdx.length / 2)] : bandIndex[s.band];
   const subjIdx = bandIndex[s.band];
 
-  // corroboration: back-cast the recent sale to 1991
-  const { rows: sale } = await query<{ sp: number; region: string; saleYear: number }>(
+  // corroboration: back-cast a recent sale to 1991 — try the exact address, else the
+  // median of real Land Registry sales in the same postcode (works for live lookups).
+  let { rows: sale } = await query<{ sp: number; region: string; saleYear: number }>(
     `SELECT sale_price AS sp, region, toYear(sale_date) AS saleYear
      FROM overtaxed.sales WHERE country='UK' AND address = {addr:String}
      ORDER BY sale_date DESC LIMIT 1`,
     { addr: s.address },
   );
+  if (!sale.length && s.postcode) {
+    sale = (await query(
+      `SELECT toUInt64(median(sale_price)) AS sp, any(region) AS region, max(toYear(sale_date)) AS saleYear
+       FROM overtaxed.sales WHERE country='UK' AND postcode = {pc:String}
+       HAVING count() > 0`,
+      { pc: s.postcode },
+    )).rows as typeof sale;
+  }
   let estBand: string | null = null;
   let est1991: number | null = null;
   let saleYear = 2023;
