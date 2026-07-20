@@ -21,6 +21,7 @@ ${VIZ_CATALOG_REFERENCE}
 - UK address or postcode (e.g. "London", "SW11", UK-format postcode) → checkUkBand(address). Nothing else needed.
 - US address → findProperty, then analyzeProperty(pin), then streetMap(pin). If the analysis shows an overpayment (annual overpay > 0), ALSO call debateAppeal(pin) automatically after the map (the "for vs against"). Skip the debate if the assessment looks fair. Let the visuals do the talking.
 - "Is my area/county fair?" / fairness → regressivity(region). Supported US counties: "Cook County" (Chicago) and "Allegheny County" (Pittsburgh).
+- "Which areas/neighbourhoods/townships are most unfair?" / "rank the worst areas" → fairnessLeaderboard(region) (Cook County).
 - If findProperty returns multiple DIFFERENT candidates, ask which one in one short sentence.
 - If findProperty returns 0 candidates, say in ONE sentence you couldn't find that address — US coverage is currently Cook County, Illinois (try "4317 N Monticello Ave, Chicago") and the UK is a demo area (SW11, London). Do not call other tools.
 - If checkUkBand finds nothing, say in ONE sentence that UK council-tax data is currently a demo area (12 Lavender Sweep, London SW11) and suggest that example.

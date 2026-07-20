@@ -131,6 +131,14 @@ export const AppealPacket = z.object({
   estimatedAnnualSaving: z.number().optional(),
 });
 
+/** 8 — a leaderboard ranking areas by how regressively they assess homes. */
+export const FairnessLeaderboard = z.object({
+  kind: z.literal("fairnessLeaderboard"),
+  region: z.string(),
+  areas: z.array(z.object({ name: z.string(), prd: z.number(), n: z.number() })),
+  caption: z.string().optional(),
+});
+
 /** 7 — a "for vs against" debate on whether to appeal (two AI advocates + a verdict). */
 export const AppealDebate = z.object({
   kind: z.literal("appealDebate"),
@@ -149,6 +157,7 @@ export const VizSpec = z.discriminatedUnion("kind", [
   CompsTable,
   AppealPacket,
   AppealDebate,
+  FairnessLeaderboard,
 ]);
 
 export type VizSpec = z.infer<typeof VizSpec>;
@@ -159,6 +168,7 @@ export type DistributionStrip = z.infer<typeof DistributionStrip>;
 export type CompsTable = z.infer<typeof CompsTable>;
 export type AppealPacket = z.infer<typeof AppealPacket>;
 export type AppealDebate = z.infer<typeof AppealDebate>;
+export type FairnessLeaderboard = z.infer<typeof FairnessLeaderboard>;
 
 /** Human-readable catalog reference injected into the system prompt. */
 export const VIZ_CATALOG_REFERENCE = `

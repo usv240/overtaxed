@@ -8,12 +8,13 @@ import { mintChatAccessToken, startChatSession } from "@/app/actions";
 import { VizRenderer } from "./VizRenderer";
 import { ThemeToggle } from "./ThemeToggle";
 import { Icon } from "./Icon";
+import { ContextPanel, type Stats } from "./ContextPanel";
 import type { VizSpec } from "@/lib/viz-catalog";
 
 const EXAMPLES = [
   { icon: "home", title: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
   { icon: "chart", title: "Is Cook County fair?", q: "Is Cook County assessed fairly?" },
-  { icon: "chart", title: "Is Allegheny fair?", q: "Is Allegheny County assessed fairly?" },
+  { icon: "chart", title: "Most unfair areas?", q: "Which Cook County neighbourhoods are the most unfairly assessed?" },
   { icon: "pin", title: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
 ] as const;
 
@@ -30,6 +31,44 @@ function extractVisuals(parts: any[]): { spec: VizSpec; ms?: number; rows?: numb
   return out;
 }
 
+/** True while the debate sub-task has been called but hasn't returned yet. */
+function debatePending(parts: any[]): boolean {
+  for (const p of parts ?? []) {
+    const t = typeof p?.type === "string" ? p.type : "";
+    const isDebate = t.includes("debateAppeal") || (t === "dynamic-tool" && p?.toolName === "debateAppeal");
+    if (isDebate) {
+      const hasOutput = p?.output ?? p?.result ?? p?.toolInvocation?.result;
+      if (!hasOutput && p?.state !== "output-available" && p?.state !== "output-error") return true;
+    }
+  }
+  return false;
+}
+
+function DebateLoader() {
+  const bar = "h-2 rounded bg-black/10 dark:bg-white/15";
+  return (
+    <div className="my-3 rounded-2xl border border-border bg-surface p-4 shadow-sm">
+      <div className="mb-2 flex items-center gap-1.5">
+        <Icon name="message" size={16} className="text-accent" />
+        <h4 className="font-semibold">Should you appeal? Two AI advocates are debating…</h4>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {["For appealing", "Against"].map((label, i) => (
+          <div key={label} className={`rounded-xl border p-3 ${i === 0 ? "border-pos/25 bg-pos/5" : "border-warn/25 bg-warn/5"}`}>
+            <div className={`mb-2 text-xs font-semibold uppercase tracking-wide ${i === 0 ? "text-pos" : "text-warn"}`}>{label}</div>
+            <div className="animate-pulse space-y-1.5">
+              <div className={bar} style={{ width: "95%" }} />
+              <div className={bar} style={{ width: "88%" }} />
+              <div className={bar} style={{ width: "66%" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted"><Dots /> running a durable Trigger.dev sub-task…</p>
+    </div>
+  );
+}
+
 function Dots() {
   return (
     <span className="inline-flex gap-1">
@@ -40,7 +79,7 @@ function Dots() {
   );
 }
 
-export function Chat() {
+export function Chat({ stats }: { stats: Stats }) {
   const transport = useTriggerChatTransport<typeof overtaxedChat>({
     task: "overtaxed",
     accessToken: ({ chatId }) => mintChatAccessToken(chatId),
@@ -50,9 +89,17 @@ export function Chat() {
   const { messages, sendMessage, stop, status } = useChat({ transport });
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const atBottomRef = useRef(true);
+
+  const onScroll = () => {
+    const el = scrollRef.current;
+    if (el) atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+  };
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    // only auto-scroll if the user is already at the bottom — never yank them up
+    const el = scrollRef.current;
+    if (el && atBottomRef.current) el.scrollTop = el.scrollHeight;
   }, [messages, status]);
 
   const send = (text: string) => {
@@ -68,7 +115,7 @@ export function Chat() {
     <div className="flex h-dvh flex-col">
       {/* App bar */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6">
           <a href="/" className="flex items-center gap-2 font-bold tracking-tight">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-sm text-accent-fg">O</span>
             Overtaxed
@@ -81,8 +128,10 @@ export function Chat() {
         </div>
       </header>
 
-      {/* Conversation */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Conversation column */}
+        <main className="flex flex-1 flex-col overflow-hidden">
+      <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-4 py-6">
           {empty ? (
             <div className="flex flex-col items-center pt-8 text-center sm:pt-16">
@@ -108,6 +157,26 @@ export function Chat() {
                   </button>
                 ))}
               </div>
+
+              {/* Why it's worth checking — plain-English impact / savings */}
+              <div className="mt-14 w-full max-w-2xl border-t border-border pt-8">
+                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted">Why it&apos;s worth 10 seconds</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {[
+                    { big: "1 in 3", small: "homes are valued too high for tax" },
+                    { big: "$1,000–3,000", small: "saved per successful appeal, every year" },
+                    { big: "under 5%", small: "of people ever check or challenge it" },
+                  ].map((s) => (
+                    <div key={s.small} className="rounded-xl border border-border bg-surface p-4 text-left shadow-sm">
+                      <div className="text-2xl font-bold tracking-tight text-accent">{s.big}</div>
+                      <div className="mt-1 text-xs leading-snug text-muted">{s.small}</div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-5 text-center text-sm text-muted">
+                  You could be owed <strong className="text-foreground">thousands</strong>. It&apos;s free, takes seconds, and we hand you the appeal — you decide what to do.
+                </p>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
@@ -125,6 +194,7 @@ export function Chat() {
                       </div>
                     )}
                     {visuals.map((v, i) => <VizRenderer key={i} spec={v.spec} ms={v.ms} rows={v.rows} />)}
+                    {m.role === "assistant" && debatePending((m as any).parts) && <DebateLoader />}
                   </div>
                 );
               })}
@@ -171,6 +241,13 @@ export function Chat() {
           )}
         </form>
         <p className="py-2.5 text-center text-xs text-muted">Estimates from public records · not tax or legal advice</p>
+      </div>
+        </main>
+
+        {/* Persistent context sidebar */}
+        <aside className="hidden w-80 shrink-0 overflow-y-auto border-l border-border bg-surface-2/30 lg:block xl:w-96">
+          <ContextPanel stats={stats} />
+        </aside>
       </div>
     </div>
   );

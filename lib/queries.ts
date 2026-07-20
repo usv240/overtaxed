@@ -13,6 +13,7 @@ import type {
   DistributionStrip,
   CompsTable,
   AppealPacket,
+  FairnessLeaderboard,
 } from "@/lib/viz-catalog";
 
 /**
@@ -330,6 +331,33 @@ async function ensureUkBandsCached(postcode: string): Promise<number> {
     clickhouse_settings: { async_insert: 0 },
   });
   return rows.length;
+}
+
+/** Rank areas (Cook County townships) by how regressively they assess homes. */
+export async function getFairnessLeaderboard(region: string): Promise<{ spec: FairnessLeaderboard; elapsedMs: number; rowsRead: number }> {
+  const { rows, elapsedMs } = await query<{ name: string; prd: number; n: number }>(
+    `WITH r AS (
+       SELECT a.address AS area, a.assessed_value AS av, ls.sp AS sp, a.assessed_value / ls.sp AS ratio
+       FROM overtaxed.assessments a
+       INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp
+                   FROM overtaxed.sales WHERE region = {region:String} AND country='US' GROUP BY pin) ls USING (pin)
+       WHERE a.region = {region:String} AND a.address != ''
+         AND ls.sp > 20000 AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+     )
+     SELECT area AS name, round(avg(ratio)/(sum(av)/sum(sp)), 3) AS prd, count() AS n
+     FROM r GROUP BY area HAVING n > 300 ORDER BY prd DESC LIMIT 12`,
+    { region },
+  );
+  const worst = rows[0];
+  const spec: FairnessLeaderboard = {
+    kind: "fairnessLeaderboard",
+    region,
+    areas: rows,
+    caption: worst
+      ? `${worst.name} is the most regressively-assessed area in ${region} (PRD ${worst.prd}) — cheaper homes there carry the heaviest share.`
+      : undefined,
+  };
+  return { spec, elapsedMs, rowsRead: rows.length };
 }
 
 /** UK: is this home in the wrong council tax band? (LIVE VOA bands + neighbour comparison + 1991 back-cast) */

@@ -110,6 +110,13 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
             </p>
           ) : null}
           {spec.simple ? <Simple>{spec.simple}</Simple> : spec.subtitle && <p className="mt-2 text-sm text-muted">{spec.subtitle}</p>}
+          {spec.overpaymentPerPeriod > 0 && (
+            <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-pos/10 px-3 py-1.5 text-sm font-medium text-pos">
+              <Icon name="check" size={15} className="shrink-0" />
+              Reclaim about {money(spec.overpaymentPerPeriod, spec.currency)}/yr by appealing
+              {spec.owedBack ? <> — plus {money(spec.owedBack, spec.currency)} backdated</> : null}.
+            </div>
+          )}
           <TechDetails rows={spec.technicalRows} />
           <p className="mt-2 text-xs text-muted">
             Confidence: {spec.confidence}
@@ -194,6 +201,34 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
           </div>
         </Card>
       );
+
+    case "fairnessLeaderboard": {
+      const max = Math.max(...spec.areas.map((a) => a.prd), 1.1);
+      return (
+        <Card>
+          <h4 className="font-semibold">Most unfairly-assessed areas in {spec.region}</h4>
+          <p className="text-sm text-muted">
+            Ranked by PRD
+            <InfoTip label="PRD — the fairness score">Above 1.03 means cheaper homes are taxed at a higher rate than expensive ones. Higher = more unfair.</InfoTip>
+            {" "}— higher bars = cheaper homes carry more of the burden.
+          </p>
+          <div className="mt-3 space-y-1.5">
+            {spec.areas.map((a, i) => (
+              <div key={a.name} className="flex items-center gap-2 text-sm">
+                <span className="w-5 shrink-0 text-right text-xs text-muted">{i + 1}</span>
+                <span className="w-24 shrink-0 truncate sm:w-32" title={a.name}>{a.name}</span>
+                <div className="h-4 flex-1 overflow-hidden rounded bg-surface-2">
+                  <div className="h-full rounded" style={{ width: `${Math.min(100, ((a.prd - 0.95) / (max - 0.95)) * 100)}%`, background: a.prd > 1.03 ? "#dc2626" : "#22c55e" }} />
+                </div>
+                <span className="w-10 shrink-0 text-right font-semibold tabular-nums">{a.prd}</span>
+              </div>
+            ))}
+          </div>
+          {spec.caption && <Simple>{spec.caption}</Simple>}
+          <Badge ms={ms} rows={rows} />
+        </Card>
+      );
+    }
 
     case "appealDebate": {
       const file = spec.recommendation === "file";

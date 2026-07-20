@@ -7,6 +7,7 @@ import {
   getStreetMap,
   generateAppealPacket,
   checkUkBand,
+  getFairnessLeaderboard,
 } from "@/lib/queries";
 import { appealDebate } from "./debate";
 import type { VizSpec } from "@/lib/viz-catalog";
@@ -124,10 +125,21 @@ export const debateAppealTool = tool({
   },
 });
 
+export const fairnessLeaderboardTool = tool({
+  description:
+    "Rank the neighbourhoods/townships of a US county by how regressively they assess homes (which areas over-tax cheaper homes most). Use for 'which areas are most unfair?', 'worst neighbourhoods', 'rank townships'. Currently Cook County.",
+  inputSchema: z.object({ region: z.enum(["Cook County"]).describe("US county") }),
+  execute: async ({ region }) => {
+    const { spec, elapsedMs, rowsRead } = await getFairnessLeaderboard(region);
+    return { visuals: [spec], elapsedMs, rowsRead };
+  },
+});
+
 export const overtaxedTools = {
   findProperty: findPropertyTool,
   checkUkBand: checkUkBandTool,
   debateAppeal: debateAppealTool,
+  fairnessLeaderboard: fairnessLeaderboardTool,
   analyzeProperty: analyzePropertyTool,
   streetMap: streetMapTool,
   regressivity: regressivityTool,

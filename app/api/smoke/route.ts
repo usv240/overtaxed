@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { findProperty, analyzeProperty, getRegressivity, getStreetMap, generateAppealPacket, checkUkBand } from "@/lib/queries";
+import { findProperty, analyzeProperty, getRegressivity, getStreetMap, generateAppealPacket, checkUkBand, getFairnessLeaderboard } from "@/lib/queries";
 
 // Temporary end-to-end smoke test of the query layer through @clickhouse/client.
 // GET /api/smoke  → runs the same functions the agent tools call.
@@ -12,6 +12,7 @@ export async function GET(req: Request) {
   const appeal = pin ? await generateAppealPacket(pin) : null;
   const regressivity = await getRegressivity("Cook County");
   const uk = await checkUkBand(new URL(req.url).searchParams.get("uk") || "12 Lavender Sweep");
+  const leaderboard = await getFairnessLeaderboard("Cook County");
 
   return NextResponse.json({
     findProperty: { count: found.candidates.length, first: found.candidates[0], ms: found.elapsedMs },
@@ -32,6 +33,7 @@ export async function GET(req: Request) {
       impact: regressivity.spec.impact,
       ms: regressivity.elapsedMs,
     },
+    leaderboard: { top: leaderboard.spec.areas.slice(0, 3), caption: leaderboard.spec.caption, ms: leaderboard.elapsedMs },
     uk: uk.found && {
       headline: uk.verdict?.headline,
       owedBack: uk.verdict?.owedBack,
