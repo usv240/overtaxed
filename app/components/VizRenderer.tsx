@@ -328,10 +328,16 @@ function RegressivityCard({
           <p className="mt-1.5 text-sm leading-relaxed">
             <strong>{spec.impact.overAssessedPct}%</strong> of homes here are over-assessed versus a fair system.
             Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong> a year —
-            and that&apos;s only from the {spec.impact.soldSample.toLocaleString()} homes sold last year. At full county
-            scale that&apos;s an estimated <strong>{money(spec.impact.estCountyAnnual)}/yr</strong> shifted onto them.
+            and that&apos;s only from the {spec.impact.soldSample.toLocaleString()} homes sold last year.
             The typical over-assessed lower-value home pays <strong>{money(spec.impact.avgOverpayBelow)}</strong> too much.
           </p>
+          {spec.impact.totalParcels && (
+            <p className="mt-1.5 text-[11px] text-muted">
+              Extrapolated to all {spec.impact.totalParcels.toLocaleString()} parcels: an estimated{" "}
+              <strong className="text-neg">{money(spec.impact.estCountyAnnual)}/yr</strong>{" "}
+              (measured excess × {(spec.impact.totalParcels / spec.impact.soldSample).toFixed(0)}, assuming sold homes are representative).
+            </p>
+          )}
         </div>
       )}
 

@@ -283,14 +283,16 @@ export async function getRegressivity(
 
   const i = imp[0];
   if (i && i.sold > 0) {
-    // extrapolate the measured excess (from sold homes) to the full parcel base
-    const affectedCountywide = i.totalParcels * 0.5 * (i.overPct / 100);
+    // Extrapolation = measured annual excess on the sold sample, scaled by how many
+    // total parcels there are vs how many sold (representative-sample scale-up).
+    const scale = i.totalParcels / i.sold;
     spec.impact = {
       overAssessedPct: i.overPct,
       avgOverpayBelow: i.avgOverpayBelow,
       excessTaxBelowMeasured: i.excessBelow,
       soldSample: i.sold,
-      estCountyAnnual: Math.round(affectedCountywide * i.avgOverpayBelow),
+      totalParcels: i.totalParcels,
+      estCountyAnnual: Math.round(i.excessBelow * scale),
     };
   }
 

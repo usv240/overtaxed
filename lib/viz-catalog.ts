@@ -79,6 +79,7 @@ export const RegressivityScatter = z.object({
       avgOverpayBelow: z.number(),
       excessTaxBelowMeasured: z.number(),
       soldSample: z.number(),
+      totalParcels: z.number().optional(),
       estCountyAnnual: z.number(),
     })
     .optional(),
