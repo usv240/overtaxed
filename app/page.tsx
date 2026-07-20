@@ -2,11 +2,17 @@ import Link from "next/link";
 import { InfoTip } from "@/app/components/InfoTip";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { Icon } from "@/app/components/Icon";
+import { getRegressivity } from "@/lib/queries";
 
 export const metadata = {
   title: "Overtaxed — are you overpaying on your home?",
   description: "Check if your home is taxed too high, see the proof on a map, and get a ready-to-file appeal. Free, no sign-up.",
 };
+
+// refresh the live impact number at most hourly
+export const revalidate = 3600;
+
+const usd0 = (n: number) => new Intl.NumberFormat("en", { style: "currency", currency: "USD", maximumFractionDigits: 0, notation: "compact" }).format(n);
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
@@ -55,7 +61,12 @@ function Kicker({ children }: { children: React.ReactNode }) {
   return <p className="mb-2 text-center text-xs font-semibold uppercase tracking-widest text-accent">{children}</p>;
 }
 
-export default function Landing() {
+export default async function Landing() {
+  let impact: Awaited<ReturnType<typeof getRegressivity>>["spec"]["impact"] | null = null;
+  try {
+    impact = (await getRegressivity("Cook County")).spec.impact ?? null;
+  } catch { /* landing still renders without the live number */ }
+
   return (
     <div className="min-h-dvh">
       {/* Nav */}
@@ -109,6 +120,24 @@ export default function Landing() {
           <Stat big="< 1 in 20" small="people ever challenge it — yet winning saves $1,000–3,000 (or £1,000s) a year." />
         </div>
       </section>
+
+      {/* Impact band */}
+      {impact && (
+        <section className="border-y border-border bg-neg/5">
+          <div className="mx-auto max-w-4xl px-4 py-14 text-center">
+            <p className="text-xs font-semibold uppercase tracking-widest text-neg">The scale of it</p>
+            <h2 className="mx-auto mt-3 max-w-3xl text-2xl font-bold leading-snug tracking-tight sm:text-3xl">
+              In Cook County alone, an estimated <span className="text-neg">{usd0(impact.estCountyAnnual)}/year</span> is
+              quietly shifted onto lower-value homeowners.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-muted">
+              {impact.overAssessedPct}% of homes are over-assessed versus a fair system — the typical over-assessed
+              lower-value home overpays about <strong className="text-foreground">{usd0(impact.avgOverpayBelow)}</strong>{" "}
+              a year. Not a guess: computed live from public records. We help you claim your share back.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* How it works */}
       <section id="how" className="border-y border-border bg-surface-2/40">
