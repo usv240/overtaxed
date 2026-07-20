@@ -24,7 +24,15 @@ export const findPropertyTool = tool({
   }),
   execute: async ({ address }) => {
     const { candidates, elapsedMs } = await findProperty(address);
-    return { candidates, elapsedMs, count: candidates.length };
+    return {
+      candidates,
+      elapsedMs,
+      count: candidates.length,
+      message:
+        candidates.length === 0
+          ? "No match. US coverage is currently Cook County, Illinois; the UK is a demo area (SW11, London). Suggest an example address."
+          : undefined,
+    };
   },
 });
 

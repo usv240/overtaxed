@@ -69,7 +69,10 @@ export async function analyzeProperty(pin: string): Promise<{
   meta?: AnalyzeRow & { appealStrength: string; confidence: string; annualOverpay: number };
   elapsedMs: number;
 }> {
-  const { rows, elapsedMs } = await query<AnalyzeRow>(
+  const { rows, elapsedMs } = await query<{
+    address: string; region: string; lat: number; lng: number;
+    assessed: number; subject_sale: number; median_ratio: number;
+  }>(
     `WITH latest_sales AS (
        SELECT pin, argMax(sale_price, sale_date) AS sp
        FROM overtaxed.sales GROUP BY pin
@@ -90,13 +93,11 @@ export async function analyzeProperty(pin: string): Promise<{
        p.lat                                        AS lat,
        p.lng                                        AS lng,
        a.assessed_value                            AS assessed,
-       ls.sp                                        AS recent_sale,
-       round(a.assessed_value / ls.sp, 4)          AS ratio,
-       round((SELECT median_ratio FROM nbhd), 4)   AS median_ratio,
-       toInt64(a.assessed_value - ls.sp)           AS over_assessed_by
+       toUInt64(ls.sp)                             AS subject_sale,   -- 0 if never sold
+       round((SELECT median_ratio FROM nbhd), 4)   AS median_ratio
      FROM overtaxed.parcels p
      INNER JOIN overtaxed.assessments a ON a.pin = p.pin
-     INNER JOIN latest_sales ls ON ls.pin = p.pin
+     LEFT JOIN latest_sales ls ON ls.pin = p.pin
      WHERE p.pin = {pin:String}
      LIMIT 1`,
     { pin },
@@ -105,16 +106,7 @@ export async function analyzeProperty(pin: string): Promise<{
   if (!rows.length) return { found: false, elapsedMs };
   const r = rows[0];
 
-  const rate = US_EFFECTIVE_TAX_RATE[r.region] ?? US_DEFAULT_EFFECTIVE_RATE;
-  // Over-assessment relative to what a FAIR (median-ratio) assessment would be.
-  const fairAssessed = r.recent_sale * r.median_ratio;
-  const excessAssessed = Math.max(0, r.assessed - fairAssessed);
-  const annualOverpay = Math.round(excessAssessed * rate);
-
-  const overPct = r.ratio / r.median_ratio - 1;
-  const appealStrength =
-    overPct > 0.1 ? "strong" : overPct > 0.05 ? "moderate" : overPct > 0.02 ? "weak" : "none";
-
+  // comparable sales nearby (always available in a populated county)
   const { rows: compRows } = await query<{
     address: string; salePrice: number; saleDate: string; distanceMi: number;
   }>(
@@ -130,28 +122,47 @@ export async function analyzeProperty(pin: string): Promise<{
     { lng: r.lng, lat: r.lat, region: r.region, pin },
   );
 
+  // Fair market value = the subject's own recent sale if it has one, else the
+  // median of the nearest comparable sales (how appraisers actually value a home).
+  const compMedian = compRows.length
+    ? [...compRows].map((c) => c.salePrice).sort((a, b) => a - b)[Math.floor(compRows.length / 2)]
+    : 0;
+  const usedComps = !(r.subject_sale > 0);
+  const baseMarket = usedComps ? compMedian : r.subject_sale;
+  const medianRatio = r.median_ratio > 0 ? r.median_ratio : 1;
+  if (!baseMarket) return { found: false, elapsedMs }; // no sale AND no comps (extremely rare)
+
+  const rate = US_EFFECTIVE_TAX_RATE[r.region] ?? US_DEFAULT_EFFECTIVE_RATE;
+  const fairAssessed = baseMarket * medianRatio;
+  const excessAssessed = Math.max(0, r.assessed - fairAssessed);
+  const annualOverpay = Math.round(excessAssessed * rate);
+  const ratio = r.assessed / baseMarket;
+  const overPct = ratio / medianRatio - 1;
+  const appealStrength =
+    overPct > 0.1 ? "strong" : overPct > 0.05 ? "moderate" : overPct > 0.02 ? "weak" : "none";
+  const confidence = !usedComps && compRows.length >= 4 ? "high" : compRows.length >= 3 ? "medium" : "low";
+
   const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+  const mkt = usedComps ? "comparable homes nearby" : "your recent sale";
   const verdict: VerdictCard = {
     kind: "verdictCard",
     headline:
-      annualOverpay > 0
-        ? `You're overpaying ~${usd(annualOverpay)}/yr`
-        : `Your assessment looks fair`,
+      annualOverpay > 0 ? `You're overpaying ~${usd(annualOverpay)}/yr` : `Your assessment looks fair`,
     overpaymentPerPeriod: annualOverpay,
     period: "year",
     currency: "USD",
-    confidence: compRows.length >= 4 ? "high" : compRows.length >= 2 ? "medium" : "low",
+    confidence,
     appealStrength: appealStrength as VerdictCard["appealStrength"],
-    subtitle: `Assessed ${usd(r.assessed)} vs recent sale ${usd(r.recent_sale)} (ratio ${r.ratio.toFixed(2)} vs neighbourhood median ${r.median_ratio.toFixed(2)}).`,
+    subtitle: `Assessed ${usd(r.assessed)} vs ${mkt} ${usd(baseMarket)} (ratio ${ratio.toFixed(2)} vs neighbourhood median ${medianRatio.toFixed(2)}).`,
     simple:
       annualOverpay > 0
-        ? `In plain terms: the tax office values your home at ${usd(r.assessed)}, but homes like yours nearby recently sold for about ${usd(r.recent_sale)}. Similar homes are taxed at roughly ${r.median_ratio.toFixed(2)}× their value — which points to a fair value near ${usd(fairAssessed)}. So your bill looks about ${usd(annualOverpay)} a year too high.`
+        ? `In plain terms: the tax office values your home at ${usd(r.assessed)}, but ${usedComps ? "homes like yours nearby recently sold for about" : "your home recently sold for"} ${usd(baseMarket)}. Similar homes are taxed at roughly ${medianRatio.toFixed(2)}× their value — which points to a fair value near ${usd(fairAssessed)}. So your bill looks about ${usd(annualOverpay)} a year too high.`
         : `In plain terms: your assessment lines up with what similar homes nearby actually sell for, so you don't appear to be overpaying.`,
     technicalRows: [
       { label: "Assessor's market value", value: usd(r.assessed) },
-      { label: "Most recent sale", value: usd(r.recent_sale) },
-      { label: "Your assessment ratio (assessed ÷ sale)", value: r.ratio.toFixed(3) },
-      { label: "Neighbourhood median ratio (≤2 km)", value: r.median_ratio.toFixed(3) },
+      { label: usedComps ? "Comparable homes (median sale)" : "Most recent sale", value: usd(baseMarket) },
+      { label: "Your assessment ratio (assessed ÷ market)", value: ratio.toFixed(3) },
+      { label: "Neighbourhood median ratio (≤2 km)", value: medianRatio.toFixed(3) },
       { label: "Fair value at median ratio", value: usd(fairAssessed) },
       { label: "Effective tax rate", value: `${(rate * 100).toFixed(1)}%` },
       { label: "Annual overpay", value: `(${usd(r.assessed)} − ${usd(fairAssessed)}) × ${(rate * 100).toFixed(1)}% = ${usd(annualOverpay)}` },
@@ -169,7 +180,12 @@ export async function analyzeProperty(pin: string): Promise<{
     found: true,
     verdict,
     comps,
-    meta: { ...r, appealStrength, confidence: verdict.confidence, annualOverpay },
+    meta: {
+      address: r.address, region: r.region, lat: r.lat, lng: r.lng,
+      assessed: r.assessed, recent_sale: baseMarket, ratio, median_ratio: medianRatio,
+      over_assessed_by: Math.round(excessAssessed),
+      appealStrength, confidence, annualOverpay,
+    },
     elapsedMs,
   };
 }
