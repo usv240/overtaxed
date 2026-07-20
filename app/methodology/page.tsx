@@ -8,7 +8,9 @@ async function counts() {
     SELECT 'UK sales (Land Registry)' AS metric, toString(count()) AS n FROM overtaxed.sales WHERE country='UK'
     UNION ALL SELECT 'Cook County sales (arms-length)', toString(count()) FROM overtaxed.sales WHERE region='Cook County'
     UNION ALL SELECT 'Cook County assessments', toString(count()) FROM overtaxed.assessments WHERE region='Cook County'
-    UNION ALL SELECT 'Cook County parcels (geo+address)', toString(count()) FROM overtaxed.parcels`);
+    UNION ALL SELECT 'Cook County parcels (geo+address)', toString(count()) FROM overtaxed.parcels
+    UNION ALL SELECT 'Allegheny County assessments', toString(count()) FROM overtaxed.assessments WHERE region='Allegheny County'
+    UNION ALL SELECT 'Allegheny County sales (arms-length)', toString(count()) FROM overtaxed.sales WHERE region='Allegheny County'`);
   return rows;
 }
 
@@ -41,7 +43,7 @@ export default async function MethodologyPage() {
         {rows.map((r) => <Row key={r.metric} k={r.metric} v={<strong>{fmt(r.n)}</strong>} />)}
       </div>
       <ul className="mt-2 space-y-1 text-sm text-muted">
-        <li>• US: <a className="underline" href="https://datacatalog.cookcountyil.gov/">Cook County Assessor Open Data</a> — Parcel Universe (geo), Parcel Addresses, Assessed Values, Parcel Sales.</li>
+        <li>• US: <a className="underline" href="https://datacatalog.cookcountyil.gov/">Cook County Assessor Open Data</a> (Parcel Universe, Addresses, Assessed Values, Sales) and <a className="underline" href="https://data.wprdc.org/dataset/property-assessments">Allegheny County (WPRDC)</a> — two counties, proving the pipeline generalises.</li>
         <li>• UK: <a className="underline" href="https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads">HM Land Registry Price Paid Data</a> (Open Government Licence).</li>
       </ul>
 

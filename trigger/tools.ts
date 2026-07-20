@@ -62,7 +62,7 @@ export const regressivityTool = tool({
   description:
     "THE fairness exposé. Compute PRD & COD for a whole region and return a scatter of sale price vs assessment ratio. Use for 'is my county/area fair?' or to reveal systemic regressivity.",
   inputSchema: z.object({
-    region: z.string().describe("e.g. 'Cook County'"),
+    region: z.enum(["Cook County", "Allegheny County"]).describe("US county to analyse for assessment fairness"),
   }),
   execute: async ({ region }) => {
     const { spec, elapsedMs, rowsRead } = await getRegressivity(region);

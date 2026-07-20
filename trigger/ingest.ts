@@ -174,3 +174,52 @@ export const ingestCookParcels = task({
     return { year, parcels: Number(c), elapsedSec: Math.round((Date.now() - started) / 1000) };
   },
 });
+
+/** Second US county — Allegheny (Pittsburgh). Proves the pipeline generalises.
+ *  WPRDC open data via ClickHouse url(); FAIRMARKETTOTAL is already market value. */
+export const ingestAllegheny = task({
+  id: "ingest-allegheny",
+  maxDuration: 3600,
+  run: async () => {
+    const client = ch();
+    const started = Date.now();
+    const DUMP = "https://data.wprdc.org/datastore/dump";
+    const ASSESS = "65855e14-549e-4992-b5be-d629afc676fa";
+    const SALES = "5bbe6c55-bce6-4edb-9d04-68edeb6bf7b1";
+    const S = "input_format_csv_allow_variable_number_of_columns=1, max_http_get_redirects=5";
+
+    await client.command({ query: `DELETE FROM overtaxed.assessments WHERE region='Allegheny County'` });
+    await client.command({ query: `DELETE FROM overtaxed.sales WHERE region='Allegheny County'` });
+
+    // residential assessments — FAIRMARKETTOTAL is the assessor's market value
+    await client.command({
+      query: `
+        INSERT INTO overtaxed.assessments (region, pin, tax_year, assessed_value, lat, lng, class, address)
+        SELECT 'Allegheny County', PARID, 2024, toUInt64(FAIRMARKETTOTAL), 0, 0, 'RES',
+               concat(toString(PROPERTYHOUSENUM), ' ', PROPERTYADDRESS, ', ', PROPERTYCITY, ' PA')
+        FROM url('${DUMP}/${ASSESS}', 'CSVWithNames')
+        WHERE CLASSDESC = 'RESIDENTIAL' AND FAIRMARKETTOTAL > 10000
+        SETTINGS ${S}`,
+    });
+
+    // arms-length sales (recent, so price ≈ current market)
+    await client.command({
+      query: `
+        INSERT INTO overtaxed.sales (country, region, txn_id, pin, address, postcode, sale_date, sale_price, lat, lng, prop_type, beds)
+        SELECT 'US', 'Allegheny County', concat('AG', PARID, '-', toString(SALEDATE)), PARID, FULL_ADDRESS, toString(PROPERTYZIP),
+               toDate(SALEDATE), toUInt64(PRICE), 0, 0, 'single', NULL
+        FROM url('${DUMP}/${SALES}', 'CSVWithNames')
+        WHERE SALEDESC = 'VALID SALE' AND PRICE > 10000 AND toString(SALEDATE) >= '2021-01-01'
+        SETTINGS ${S}`,
+    });
+
+    const rs = await client.query({
+      query: `SELECT
+        (SELECT count() FROM overtaxed.assessments WHERE region='Allegheny County') AS assessments,
+        (SELECT count() FROM overtaxed.sales WHERE region='Allegheny County') AS sales`,
+      format: "JSONEachRow",
+    });
+    const [c] = (await rs.json()) as { assessments: string; sales: string }[];
+    return { assessments: Number(c.assessments), sales: Number(c.sales), elapsedSec: Math.round((Date.now() - started) / 1000) };
+  },
+});

@@ -12,7 +12,8 @@ import type { VizSpec } from "@/lib/viz-catalog";
 
 const EXAMPLES = [
   { icon: "home", title: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
-  { icon: "chart", title: "Is my county fair?", q: "Is Cook County assessed fairly?" },
+  { icon: "chart", title: "Is Cook County fair?", q: "Is Cook County assessed fairly?" },
+  { icon: "chart", title: "Is Allegheny fair?", q: "Is Allegheny County assessed fairly?" },
   { icon: "pin", title: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
 ] as const;
 
@@ -92,7 +93,7 @@ export function Chat() {
               <p className="mt-2 max-w-md text-muted">
                 Type any address — you&apos;ll get a picture back: a verdict, a map of your street, and a ready-to-file appeal. Not a wall of text.
               </p>
-              <div className="mt-8 grid w-full gap-3 sm:grid-cols-3">
+              <div className="mt-8 grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {EXAMPLES.map((e) => (
                   <button
                     key={e.q}

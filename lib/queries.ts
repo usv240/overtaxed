@@ -252,7 +252,7 @@ export async function getRegressivity(
             round(100*countIf(av > sp*(SELECT fair FROM f))/count()) AS overPct,
             round(sumIf(greatest(0, av - sp*(SELECT fair FROM f))*{rate:Float64}, sp < (SELECT m FROM med))) AS excessBelow,
             round(avgIf(greatest(0, av - sp*(SELECT fair FROM f))*{rate:Float64}, av > sp*(SELECT fair FROM f) AND sp < (SELECT m FROM med))) AS avgOverpayBelow,
-            (SELECT count() FROM overtaxed.parcels) AS totalParcels
+            (SELECT count() FROM overtaxed.assessments WHERE region = {region:String}) AS totalParcels
      FROM base`,
     { ...p, rate },
   );
