@@ -72,6 +72,16 @@ export const RegressivityScatter = z.object({
   quintiles: z
     .array(z.object({ quintile: z.number(), avgPrice: z.number(), avgRatio: z.number() }))
     .optional(),
+  /** quantified dollar harm of the regressivity — the impact story. */
+  impact: z
+    .object({
+      overAssessedPct: z.number(),
+      avgOverpayBelow: z.number(),
+      excessTaxBelowMeasured: z.number(),
+      soldSample: z.number(),
+      estCountyAnnual: z.number(),
+    })
+    .optional(),
   trend: z.object({ slope: z.number(), intercept: z.number() }).optional(),
   caption: z.string().optional(),
   /** plain-English explanation for non-technical users */

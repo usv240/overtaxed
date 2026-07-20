@@ -210,6 +210,28 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
     { region },
   );
 
+  // quantified dollar harm (the impact story) — computed live over the sold parcels
+  const rate = US_EFFECTIVE_TAX_RATE[region] ?? US_DEFAULT_EFFECTIVE_RATE;
+  const { rows: imp } = await query<{
+    sold: number; overPct: number; excessBelow: number; avgOverpayBelow: number; totalParcels: number;
+  }>(
+    `WITH base AS (
+       SELECT a.assessed_value AS av, ls.sp AS sp
+       FROM overtaxed.assessments a
+       INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales WHERE region = {region:String} GROUP BY pin) ls USING (pin)
+       WHERE a.region = {region:String} AND ls.sp > 20000 AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+     ),
+     f AS (SELECT sum(av)/sum(sp) AS fair FROM base),
+     med AS (SELECT quantileExact(0.5)(sp) AS m FROM base)
+     SELECT count() AS sold,
+            round(100*countIf(av > sp*(SELECT fair FROM f))/count()) AS overPct,
+            round(sumIf(greatest(0, av - sp*(SELECT fair FROM f))*{rate:Float64}, sp < (SELECT m FROM med))) AS excessBelow,
+            round(avgIf(greatest(0, av - sp*(SELECT fair FROM f))*{rate:Float64}, av > sp*(SELECT fair FROM f) AND sp < (SELECT m FROM med))) AS avgOverpayBelow,
+            (SELECT count() FROM overtaxed.parcels) AS totalParcels
+     FROM base`,
+    { region, rate },
+  );
+
   const prd = stat[0]?.prd ?? 1;
   const cod = stat[0]?.cod ?? 0;
   const n = stat[0]?.n ?? points.length;
@@ -233,6 +255,20 @@ export async function getRegressivity(region: string): Promise<{ spec: Regressiv
         ? `In plain terms: across ${n.toLocaleString("en-US")} homes here, the cheapest are taxed at about ${lo}× their value while the most expensive are taxed at only ${hi}× — so lower-value homes carry a heavier share. That's the opposite of fair.`
         : `In plain terms: taxes here look broadly even between cheaper and pricier homes.`,
   };
+
+  const i = imp[0];
+  if (i && i.sold > 0) {
+    // extrapolate the measured excess (from sold homes) to the full parcel base
+    const affectedCountywide = i.totalParcels * 0.5 * (i.overPct / 100);
+    spec.impact = {
+      overAssessedPct: i.overPct,
+      avgOverpayBelow: i.avgOverpayBelow,
+      excessTaxBelowMeasured: i.excessBelow,
+      soldSample: i.sold,
+      estCountyAnnual: Math.round(affectedCountywide * i.avgOverpayBelow),
+    };
+  }
+
   return { spec, elapsedMs, rowsRead: n };
 }
 

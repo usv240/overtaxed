@@ -28,6 +28,7 @@ export async function GET() {
       cod: regressivity.spec.cod,
       points: regressivity.spec.points.length,
       caption: regressivity.spec.caption,
+      impact: regressivity.spec.impact,
       ms: regressivity.elapsedMs,
     },
     uk: uk.found && {

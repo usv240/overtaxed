@@ -199,6 +199,21 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
             </div>
           )}
           {spec.simple && <Simple>{spec.simple}</Simple>}
+          {spec.impact && (
+            <div className="mt-3 rounded-xl border border-neg/25 bg-neg/5 p-3">
+              <div className="flex items-center gap-1.5 text-sm font-semibold text-neg">
+                <Icon name="target" size={16} /> The human cost
+              </div>
+              <p className="mt-1.5 text-sm leading-relaxed">
+                <strong>{spec.impact.overAssessedPct}%</strong> of homes here are over-assessed versus a fair system.
+                Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong> a
+                year — and that&apos;s only from the {spec.impact.soldSample.toLocaleString()} homes sold last year.
+                At full county scale that&apos;s an estimated <strong>{money(spec.impact.estCountyAnnual)}/yr</strong>{" "}
+                shifted onto them. The typical over-assessed lower-value home pays{" "}
+                <strong>{money(spec.impact.avgOverpayBelow)}</strong> too much.
+              </p>
+            </div>
+          )}
           <TechDetails
             rows={[
               { label: "PRD (Price-Related Differential)", value: `${spec.prd}  (fair ≤ 1.03)` },
