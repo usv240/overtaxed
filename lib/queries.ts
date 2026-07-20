@@ -206,8 +206,7 @@ export async function getRegressivity(
     WITH ratios AS (
       SELECT a.assessed_value AS av, ls.sp AS sp, a.assessed_value / ls.sp AS ratio
       FROM overtaxed.assessments a
-      INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp
-                  FROM overtaxed.sales WHERE region = {region:String} GROUP BY pin) ls USING (pin)
+      INNER JOIN (SELECT pin, argMaxMerge(sp) AS sp FROM overtaxed.latest_sales GROUP BY pin) ls USING (pin)
       WHERE a.region = {region:String} AND ls.sp BETWEEN {priceMin:UInt64} AND {priceMax:UInt64}
         AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
     )`;
@@ -244,7 +243,7 @@ export async function getRegressivity(
     `WITH base AS (
        SELECT a.assessed_value AS av, ls.sp AS sp
        FROM overtaxed.assessments a
-       INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales WHERE region = {region:String} GROUP BY pin) ls USING (pin)
+       INNER JOIN (SELECT pin, argMaxMerge(sp) AS sp FROM overtaxed.latest_sales GROUP BY pin) ls USING (pin)
        WHERE a.region = {region:String} AND ls.sp BETWEEN {priceMin:UInt64} AND {priceMax:UInt64} AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
      ),
      f AS (SELECT sum(av)/sum(sp) AS fair FROM base),
@@ -339,8 +338,7 @@ export async function getFairnessLeaderboard(region: string): Promise<{ spec: Fa
     `WITH r AS (
        SELECT a.address AS area, a.assessed_value AS av, ls.sp AS sp, a.assessed_value / ls.sp AS ratio
        FROM overtaxed.assessments a
-       INNER JOIN (SELECT pin, argMax(sale_price, sale_date) AS sp
-                   FROM overtaxed.sales WHERE region = {region:String} AND country='US' GROUP BY pin) ls USING (pin)
+       INNER JOIN (SELECT pin, argMaxMerge(sp) AS sp FROM overtaxed.latest_sales GROUP BY pin) ls USING (pin)
        WHERE a.region = {region:String} AND a.address != ''
          AND ls.sp > 20000 AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
      )

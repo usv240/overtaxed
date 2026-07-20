@@ -28,6 +28,22 @@ Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026** — th
 - **UK — [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads):** **6.06M** real sales (2019–2024, Open Government Licence). Council-tax **bands are fetched live from the VOA** band-check service per postcode (no bulk dataset exists) and cached in ClickHouse.
 - Reference inputs (tax rates, statutory band ratios, 1991 baselines) are consolidated + sourced in [`lib/assumptions.ts`](lib/assumptions.ts) and shown at **/methodology**.
 
+## Architecture
+
+```mermaid
+flowchart TD
+  U["User types an address"] --> UI["Next.js UI · streaming visuals"]
+  UI --> AGENT["Trigger.dev chat.agent()"]
+  AGENT --> TOOLS["Tools: findProperty · analyzeProperty · streetMap<br/>regressivity · fairnessLeaderboard · checkUkBand · appeal"]
+  AGENT --> SUB["appeal-debate · durable sub-task (2 AI advocates)"]
+  TOOLS --> CH[("ClickHouse — PRIMARY DB<br/>geoDistance comps · PRD/COD · impact<br/>MV latest_sales · url() zero-ETL")]
+  TOOLS --> VOA["Live VOA council-tax band lookup"]
+  CH -->|"postgresql() federation"| PG[("Postgres OLTP<br/>saved properties · appeals")]
+  ING["Trigger.dev ingestion tasks"] --> CH
+  SRC["Cook County · Allegheny · UK Land Registry"] --> ING
+  CRON["Scheduled task: watch-properties (cron)"] --> PG
+```
+
 ## How ClickHouse & Trigger.dev are used (both load-bearing)
 
 **ClickHouse — the primary database and the star of the demo.**
@@ -50,8 +66,10 @@ Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026** — th
 ```bash
 cp .env.example .env          # fill in ClickHouse, Postgres, Trigger, Anthropic
 npm install
-node scripts/apply-sql.mjs db/schema.sql      # ClickHouse tables
-node scripts/apply-pg.mjs  db/postgres-schema.sql   # Postgres (OLTP) tables
+node scripts/apply-sql.mjs db/schema.sql             # ClickHouse tables
+node scripts/apply-sql.mjs db/materialized-views.sql # latest_sales MV
+node scripts/apply-pg.mjs  db/postgres-schema.sql    # Postgres (OLTP) tables
+npm test                                              # unit tests
 npx trigger.dev@latest dev    # orchestration worker
 npm run dev                   # web app → http://localhost:3000
 # then load real data:

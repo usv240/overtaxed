@@ -38,9 +38,11 @@ export async function fetchVoaBands(postcode: string): Promise<VoaBand[]> {
     const url = loc.startsWith("http") ? loc : `https://www.tax.service.gov.uk${loc}`;
     r = await fetch(url, { headers: { "User-Agent": UA, Cookie: cookie } });
   }
-  const html = await r.text();
+  return parseVoaBands(await r.text());
+}
 
-  // 3) parse the results table: address | band | council
+/** Pure: parse the VOA results-table HTML into address/band/council rows. */
+export function parseVoaBands(html: string): VoaBand[] {
   const out: VoaBand[] = [];
   for (const row of html.match(/<tr class="govuk-table__row">[\s\S]*?<\/tr>/g) || []) {
     const cells = row.match(/<td[^>]*>[\s\S]*?<\/td>/g) || [];
