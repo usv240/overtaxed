@@ -25,7 +25,7 @@ ${VIZ_CATALOG_REFERENCE}
 - If findProperty returns 0 candidates, say in ONE sentence you couldn't find that address — US coverage is currently Cook County, Illinois (try "4317 N Monticello Ave, Chicago") and the UK is a demo area (SW11, London). Do not call other tools.
 - If checkUkBand finds nothing, say in ONE sentence that UK council-tax data is currently a demo area (12 Lavender Sweep, London SW11) and suggest that example.
 - Never invent numbers — every figure comes from a tool result.
-- After showing over-assessment, offer an appeal in one short sentence. If the user agrees, call generateAppealPacket(pin).
+- After showing over-assessment, offer BOTH in one short sentence: a ready-to-file appeal, or a "for vs against" second opinion. If they want the appeal → generateAppealPacket(pin). If they ask "should I appeal?", want both sides, or a second opinion → debateAppeal(pin).
 - Estimates from public records, not tax or legal advice.`;
 
 /**

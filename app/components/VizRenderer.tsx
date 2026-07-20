@@ -195,6 +195,35 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
         </Card>
       );
 
+    case "appealDebate": {
+      const file = spec.recommendation === "file";
+      return (
+        <Card>
+          <div className="mb-2 flex items-center gap-1.5">
+            <Icon name="message" size={16} className="text-accent" />
+            <h4 className="font-semibold">Should you appeal? Two AI advocates debate it</h4>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <div className="rounded-xl border border-pos/25 bg-pos/5 p-3">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-pos">For appealing</div>
+              <p className="text-sm leading-relaxed">{spec.forCase}</p>
+            </div>
+            <div className="rounded-xl border border-warn/25 bg-warn/5 p-3">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-warn">Against</div>
+              <p className="text-sm leading-relaxed">{spec.againstCase}</p>
+            </div>
+          </div>
+          <div className={`mt-3 flex items-start gap-2 rounded-xl border p-3 ${file ? "border-pos/30 bg-pos/10" : "border-border bg-surface-2"}`}>
+            <span className={`mt-0.5 rounded-full px-2 py-0.5 text-xs font-bold ${file ? "bg-pos/20 text-pos" : "bg-surface-2 text-muted"}`}>
+              {file ? "VERDICT: FILE IT" : "VERDICT: PROBABLY HOLD"}
+            </span>
+            <p className="text-sm leading-relaxed">{spec.rationale}</p>
+          </div>
+          <p className="mt-2 text-[11px] text-muted">Two Claude advocates argued this via a durable Trigger.dev sub-task.</p>
+        </Card>
+      );
+    }
+
     default:
       return null;
   }

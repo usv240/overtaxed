@@ -8,6 +8,7 @@ import {
   generateAppealPacket,
   checkUkBand,
 } from "@/lib/queries";
+import { appealDebate } from "./debate";
 import type { VizSpec } from "@/lib/viz-catalog";
 
 /**
@@ -91,9 +92,42 @@ export const checkUkBandTool = tool({
   },
 });
 
+export const debateAppealTool = tool({
+  description:
+    "US only. Run a 'for vs against' debate on whether the user should appeal: two AI advocates argue it (via a durable Trigger.dev sub-task) before a verdict. Use when the user asks 'should I appeal?', wants a second opinion, or asks to hear both sides. Needs the pin from analyzeProperty.",
+  inputSchema: z.object({ pin: z.string() }),
+  execute: async ({ pin }) => {
+    const a = await analyzeProperty(pin);
+    if (!a.found || !a.meta) return { visuals: [] as VizSpec[], elapsedMs: a.elapsedMs };
+    const m = a.meta;
+    const run = await appealDebate.triggerAndWait({
+      address: m.address,
+      assessed: m.assessed,
+      market: m.recent_sale,
+      ratio: m.ratio,
+      medianRatio: m.median_ratio,
+      overpay: m.annualOverpay,
+      appealStrength: m.appealStrength,
+      compsCount: a.comps?.comps.length ?? 0,
+      currency: "USD",
+    });
+    if (!run.ok) return { visuals: [] as VizSpec[], elapsedMs: a.elapsedMs };
+    const d = run.output;
+    const spec: VizSpec = {
+      kind: "appealDebate",
+      forCase: d.forCase,
+      againstCase: d.againstCase,
+      recommendation: d.recommendation,
+      rationale: d.rationale,
+    };
+    return { visuals: [spec], elapsedMs: a.elapsedMs };
+  },
+});
+
 export const overtaxedTools = {
   findProperty: findPropertyTool,
   checkUkBand: checkUkBandTool,
+  debateAppeal: debateAppealTool,
   analyzeProperty: analyzePropertyTool,
   streetMap: streetMapTool,
   regressivity: regressivityTool,

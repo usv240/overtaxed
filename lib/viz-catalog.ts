@@ -131,6 +131,15 @@ export const AppealPacket = z.object({
   estimatedAnnualSaving: z.number().optional(),
 });
 
+/** 7 — a "for vs against" debate on whether to appeal (two AI advocates + a verdict). */
+export const AppealDebate = z.object({
+  kind: z.literal("appealDebate"),
+  forCase: z.string(),
+  againstCase: z.string(),
+  recommendation: z.enum(["file", "hold"]),
+  rationale: z.string(),
+});
+
 /** The discriminated union the agent must produce. */
 export const VizSpec = z.discriminatedUnion("kind", [
   VerdictCard,
@@ -139,6 +148,7 @@ export const VizSpec = z.discriminatedUnion("kind", [
   DistributionStrip,
   CompsTable,
   AppealPacket,
+  AppealDebate,
 ]);
 
 export type VizSpec = z.infer<typeof VizSpec>;
@@ -148,6 +158,7 @@ export type RegressivityScatter = z.infer<typeof RegressivityScatter>;
 export type DistributionStrip = z.infer<typeof DistributionStrip>;
 export type CompsTable = z.infer<typeof CompsTable>;
 export type AppealPacket = z.infer<typeof AppealPacket>;
+export type AppealDebate = z.infer<typeof AppealDebate>;
 
 /** Human-readable catalog reference injected into the system prompt. */
 export const VIZ_CATALOG_REFERENCE = `
