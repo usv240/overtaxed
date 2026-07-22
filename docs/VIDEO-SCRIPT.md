@@ -49,9 +49,10 @@
 **VO:** "Under the hood, both tools are load-bearing. **ClickHouse is the primary database** — geo-distance comps, PRD/COD, the spatial heatmap, a materialized view for latest sales, `url()` zero-ETL ingestion straight from government CSVs, and — for the OLTP-plus-OLAP bonus — one query that federates our Postgres saved-appeals into the analytics tables via `postgresql()`. **Trigger.dev is the orchestration** — the required `chat.agent()`, durable long-running ingestion, the debate sub-task, and a scheduled task that re-checks saved homes on a cron."
 
 ## 4:35–5:00 — IMPACT + CLOSE
-**Screen:** Sidebar impact number **"$466.6M est. yearly harm, Cook Co."**, then the address bar showing the live URL.
-**VO:** "Extrapolated from the measured over-assessment, that's over **$460 million** a year that Cook County homeowners are overpaying — and every one of them can now check their address, see the proof, and file, in seconds. That's Overtaxed. It's live, and it's open source."
+**Screen:** The empty-state banner **"~$20B/yr over-shifted onto lower-value US homes"**, then click into **/methodology** and show the "bigger picture" panel (the transparent maths + the QJE citation).
+**VO:** "And this isn't a Chicago demo. We *measure* $460 million a year of over-assessment in Cook County — and scaled by owner-occupied homes, consistent with national studies of 118 million homes, that's on the order of **$20 billion a year** shifted onto lower-value homes across the US. The same pipeline already runs a second county and the UK with no code changes. Every one of those homeowners can now check their address, see the proof, and file — in seconds."
 **Screen:** End on the live URL + GitHub link (lower-third or final frame).
+**VO (last line):** "That's Overtaxed. It's live, it's open source, and it's built entirely on ClickHouse and Trigger.dev."
 
 ---
 
