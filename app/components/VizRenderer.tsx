@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
-import { fileAppealAction } from "@/app/portfolio-actions";
+import { fileAppealAction, watchPropertyAction } from "@/app/portfolio-actions";
 import { InfoTip } from "./InfoTip";
 import { Icon } from "./Icon";
 import {
@@ -215,6 +215,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
               </a>
             )}
             <FileAppealButton spec={spec} />
+            <WatchHomeButton spec={spec} />
             {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-accent underline underline-offset-2">official filing site</a>}
           </div>
           <p className="mt-2 text-[11px] text-muted">The PDF is a complete Board of Review residential complaint: grounds, proposed value, and a comparable-properties evidence grid, filled from live records.</p>
@@ -408,6 +409,38 @@ function FileAppealButton({ spec }: { spec: Extract<VizSpec, { kind: "appealPack
       className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-accent-fg shadow-sm transition-colors hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Filing…" : "File this appeal"}
+    </button>
+  );
+}
+
+/** Enrols the home in the scheduled Trigger.dev watch task (writes to Postgres OLTP). */
+function WatchHomeButton({ spec }: { spec: Extract<VizSpec, { kind: "appealPacket" }> }) {
+  const [done, setDone] = useState(false);
+  const [pending, start] = useTransition();
+  if (done)
+    return (
+      <span className="inline-flex items-center gap-1.5 text-sm text-pos">
+        <Icon name="check" size={14} className="text-pos" /> Watching — a scheduled Trigger.dev task re-checks it and flags changes.
+      </span>
+    );
+  return (
+    <button
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          await watchPropertyAction({
+            pin: spec.pin ?? null,
+            address: spec.address ?? "",
+            country: spec.country ?? "US",
+            region: spec.region ?? null,
+          });
+          setDone(true);
+        })
+      }
+      title="We re-check this home on a schedule (a Trigger.dev cron task) and flag if it becomes more appeal-worthy."
+      className="inline-flex items-center gap-1.5 rounded-full border border-border-strong bg-surface px-4 py-1.5 text-sm font-medium shadow-sm transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+    >
+      <Icon name="shield" size={14} /> {pending ? "Setting up…" : "Watch this home"}
     </button>
   );
 }
