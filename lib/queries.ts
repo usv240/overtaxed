@@ -557,6 +557,70 @@ export async function generateAppealPacket(pin: string): Promise<{ spec: AppealP
   return { spec, elapsedMs: a.elapsedMs };
 }
 
+export interface AppealDossier {
+  pin: string;
+  address: string;
+  region: string;
+  assessedMarketValue: number;   // assessor's implied market value
+  proposedMarketValue: number;   // fair value at neighbourhood median ratio
+  yourRatio: number;
+  medianRatio: number;
+  annualSaving: number;
+  filedOn: string;
+  comps: {
+    pin: string; address: string; distanceMi: number;
+    salePrice: number; saleDate: string;
+    assessed: number | null; ratio: number | null;
+  }[];
+}
+
+/** Everything the fileable PDF appeal needs — subject figures + a real
+ *  comparable-properties evidence grid (PIN + assessed value + ratio each). */
+export async function getAppealDossier(pin: string): Promise<AppealDossier | null> {
+  const a = await analyzeProperty(pin);
+  if (!a.found || !a.meta) return null;
+  const m = a.meta;
+
+  // Comps enriched with each comp's PIN, latest assessed value and ratio —
+  // the lack-of-uniformity evidence the Board of Review actually weighs.
+  const { rows: comps } = await query<{
+    pin: string; address: string; distanceMi: number;
+    salePrice: number; saleDate: string; assessed: number | null; ratio: number | null;
+  }>(
+    `WITH latest_sales AS (SELECT pin, argMax(sale_price, sale_date) AS sp, max(sale_date) AS sd
+                           FROM overtaxed.sales GROUP BY pin)
+     SELECT p.pin                                               AS pin,
+            p.address                                           AS address,
+            round(geoDistance({lng:Float64},{lat:Float64}, p.lng, p.lat)/1609.34, 3) AS distanceMi,
+            toUInt64(ls.sp)                                     AS salePrice,
+            toString(ls.sd)                                     AS saleDate,
+            a.assessed_value                                    AS assessed,
+            round(a.assessed_value / ls.sp, 3)                  AS ratio
+     FROM overtaxed.parcels p
+     INNER JOIN latest_sales ls ON ls.pin = p.pin
+     LEFT JOIN overtaxed.assessments a ON a.pin = p.pin
+     WHERE a.region = {region:String} AND p.pin != {pin:String}
+       AND ls.sp > 0 AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+     ORDER BY distanceMi ASC
+     LIMIT 6`,
+    { lng: m.lng, lat: m.lat, region: m.region, pin },
+  );
+
+  const proposed = Math.round(m.recent_sale * m.median_ratio);
+  return {
+    pin,
+    address: m.address,
+    region: m.region,
+    assessedMarketValue: Math.round(m.assessed),
+    proposedMarketValue: proposed,
+    yourRatio: m.ratio,
+    medianRatio: m.median_ratio,
+    annualSaving: Math.round(m.annualOverpay),
+    filedOn: new Date().toISOString().slice(0, 10),
+    comps,
+  };
+}
+
 /** Street map: subject + neighbours coloured by assessment ratio. */
 export async function getStreetMap(pin: string): Promise<{ spec: StreetMap | null; elapsedMs: number }> {
   const { rows, elapsedMs } = await query<{

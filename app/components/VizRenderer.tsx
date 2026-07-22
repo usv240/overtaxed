@@ -199,10 +199,19 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
               <div key={i} className="contents"><dt className="text-muted">{f.label}</dt><dd>{f.value}</dd></div>
             ))}
           </dl>
-          <div className="mt-3 flex items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            {spec.pin && (
+              <a
+                href={`/api/appeal?pin=${encodeURIComponent(spec.pin)}`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-accent-fg shadow-sm transition-colors hover:bg-accent-hover"
+              >
+                <Icon name="file" size={15} /> Download filled appeal (PDF)
+              </a>
+            )}
             <FileAppealButton spec={spec} />
             {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-accent underline">official filing site →</a>}
           </div>
+          <p className="mt-2 text-[11px] text-muted">The PDF is a complete Board of Review residential complaint — grounds, proposed value and a comparable-properties evidence grid, filled from live records.</p>
         </Card>
       );
 
