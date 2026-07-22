@@ -38,3 +38,6 @@ Thumbs.db
 coverage/
 .turbo/
 .vercel/
+
+# Internal recording aid, not for the public repo
+docs/VIDEO-SCRIPT.md
