@@ -134,9 +134,8 @@ export function Chat({ stats }: { stats: Stats }) {
         {/* Conversation column */}
         <main className="flex flex-1 flex-col overflow-hidden">
       <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl px-4 py-6">
           {empty ? (
-            <div className="hero-glow flex flex-col items-center rounded-3xl pt-8 text-center sm:pt-16">
+            <div className="hero-glow mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center rounded-3xl px-4 py-8 text-center">
               <div className="mb-2.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-muted shadow-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-pos" /> Property tax, made visual
               </div>
@@ -166,40 +165,14 @@ export function Chat({ stats }: { stats: Stats }) {
                 ))}
               </div>
 
-              {/* The bigger picture: national potential, projected from the live Cook figure */}
-              <div className="mt-12 w-full max-w-2xl rounded-2xl border border-accent/25 bg-accent-soft px-5 py-5 text-center">
-                <div className="text-3xl font-bold tracking-tight text-accent sm:text-4xl">
-                  ~${compactN(stats.nationalAnnual)}/yr
-                </div>
-                <p className="mx-auto mt-1.5 max-w-lg text-sm text-muted">
-                  over-shifted onto lower-value US homes by biased assessments. A transparent projection from the
-                  <strong className="text-foreground"> ${compactN(stats.impactAnnual)}</strong> we measure live in Cook County alone.{" "}
-                  <a href="/methodology" className="font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">See the maths.</a>
-                </p>
-              </div>
-
-              {/* Why it's worth checking: plain-English impact / savings */}
-              <div className="mt-10 w-full max-w-2xl border-t border-border pt-8">
-                <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted">Why it&apos;s worth 10 seconds</p>
-                <div className="grid gap-3 sm:grid-cols-3">
-                  {[
-                    { big: "1 in 3", small: "homes are valued too high for tax" },
-                    { big: "$1,000–3,000", small: "saved per successful appeal, every year" },
-                    { big: "under 5%", small: "of people ever check or challenge it" },
-                  ].map((s) => (
-                    <div key={s.small} className="rounded-xl border border-border bg-surface p-4 text-left shadow-sm">
-                      <div className="text-[1.6rem] font-bold leading-none tracking-tight text-accent tabular-nums">{s.big}</div>
-                      <div className="mt-2 text-xs leading-snug text-muted">{s.small}</div>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-5 text-center text-sm text-muted">
-                  You could be owed <strong className="text-foreground">thousands</strong>. It&apos;s free, takes seconds, and we hand you the appeal, so you decide what to do.
-                </p>
-              </div>
+              <p className="mt-7 max-w-lg text-sm leading-relaxed text-muted">
+                <strong className="text-foreground">~${compactN(stats.nationalAnnual)}/yr</strong> is over-shifted onto lower-value US homes by biased assessments, projected from the ${compactN(stats.impactAnnual)} we measure live in Cook County.{" "}
+                <a href="/methodology" className="font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">See the maths.</a>
+              </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="mx-auto max-w-3xl px-4 py-6">
+              <div className="space-y-4">
               {messages.map((m) => {
                 const visuals = m.role === "assistant" ? extractVisuals((m as any).parts) : [];
                 const text = ((m as any).parts ?? []).filter((p: any) => p.type === "text").map((p: any) => p.text).join("");
@@ -223,9 +196,9 @@ export function Chat({ stats }: { stats: Stats }) {
                   <Dots /> analysing…
                 </div>
               )}
+              </div>
             </div>
           )}
-        </div>
       </div>
 
       {/* Composer */}
