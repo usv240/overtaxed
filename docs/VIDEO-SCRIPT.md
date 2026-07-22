@@ -19,6 +19,36 @@ This is a do-this-then-say-this guide. **Screen = what to do.** **Point = where 
 
 ---
 
+## LINKS & CLICKS CHEAT SHEET (everything you touch, in order)
+
+**Tabs to open before recording:**
+| Tab | URL |
+|---|---|
+| 1 · App (main) | `https://overtaxed-ujwal-s-projects5.vercel.app/app` |
+| 2 · Methodology (impact) | `https://overtaxed-ujwal-s-projects5.vercel.app/methodology` |
+| 3 · Portfolio (OLTP+OLAP) | `https://overtaxed-ujwal-s-projects5.vercel.app/portfolio` |
+| 4 · Trigger Runs | `https://cloud.trigger.dev/projects/v3/proj_tscqzltxigwvlihuprmk/runs?environment=prod` *(switch env to **Prod** top-left if needed)* |
+
+**End-frame / submission (not clicked mid-demo):**
+- Live site: `https://overtaxed-ujwal-s-projects5.vercel.app`
+- GitHub: `https://github.com/usv240/overtaxed`
+
+**What you click/type in each beat (in order):**
+1. **§1** — type `Am I overtaxed at 4317 N Monticello Ave, Chicago?` → **Send**.
+2. **§2** — no clicks; scroll + hover the **`⚡ … ms · ClickHouse`** badge on the map card.
+3. **§3** — switch to **Tab 4 (Trigger Runs)**; click into the top **`overtaxed`** run to see the **`appeal-debate`** child.
+4. **§4** — Tab 1: type `Yes, prepare my appeal` → **Send** → click **Download filled appeal (PDF)** → then click **Watch this home**.
+5. **§5** — type `Which Chicago areas overpay the most for homes under $300k?` → **Send** → click **View the ClickHouse query the agent wrote**.
+6. **§6** — click the **The Tax Divide map** preset (bottom bar) → zoom in → click a red cell.
+7. **§7** — click the **Is Cook County fair?** preset → drag the **price slider**.
+8. **§8** — switch to **Tab 2 (Methodology)** → scroll to the **~$21B/yr** panel.
+9. **§9** — switch to **Tab 3 (Portfolio)** → click **View the federated query**.
+10. **§10** — Tab 1: click the **Check a UK band** preset (2-sec flash) → scroll up to the verdict card to end.
+
+> The four presets live in the bottom bar of `/app`: **Check a US home · The Tax Divide map · Is Cook County fair? · Check a UK band**. Everything else is a typed prompt or an on-card button.
+
+---
+
 ## 1 · HOOK (0:00–0:12)
 - **Screen:** Start on the clean `/app` empty state. Click into the address box at the bottom and type: `Am I overtaxed at 4317 N Monticello Ave, Chicago?` (type it as you say the last line, then press **Send**).
 - **Say:** "Most homeowners never find out they're overpaying property tax. The proof is public, but it's buried across millions of records nobody could search. So let's check one real Chicago home."
