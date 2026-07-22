@@ -157,6 +157,21 @@ export const AppealDebate = z.object({
   rationale: z.string(),
 });
 
+/** 10 — a free-form answer to any natural-language question, computed by a
+ *  live, safe, read-only ClickHouse query the agent wrote itself. Shows the SQL. */
+export const DataResult = z.object({
+  kind: z.literal("dataResult"),
+  question: z.string(),
+  sql: z.string(),
+  columns: z.array(z.string()),
+  rows: z.array(z.array(z.union([z.string(), z.number(), z.null()]))),
+  chart: z
+    .object({ type: z.enum(["bar", "line"]), xIndex: z.number(), yIndex: z.number() })
+    .nullable()
+    .optional(),
+  caption: z.string().optional(),
+});
+
 /** The discriminated union the agent must produce. */
 export const VizSpec = z.discriminatedUnion("kind", [
   VerdictCard,
@@ -168,6 +183,7 @@ export const VizSpec = z.discriminatedUnion("kind", [
   AppealDebate,
   FairnessLeaderboard,
   RegressivityMap,
+  DataResult,
 ]);
 
 export type VizSpec = z.infer<typeof VizSpec>;
@@ -180,6 +196,7 @@ export type AppealPacket = z.infer<typeof AppealPacket>;
 export type AppealDebate = z.infer<typeof AppealDebate>;
 export type FairnessLeaderboard = z.infer<typeof FairnessLeaderboard>;
 export type RegressivityMap = z.infer<typeof RegressivityMap>;
+export type DataResult = z.infer<typeof DataResult>;
 
 /** Human-readable catalog reference injected into the system prompt. */
 export const VIZ_CATALOG_REFERENCE = `
@@ -190,6 +207,7 @@ You answer with VISUALS, never walls of text. Call \`renderVisualization\` with 
 - distributionStrip  → where the subject's ratio sits in the neighbourhood.
 - compsTable         → the comparable sales used (always show your work).
 - appealPacket       → the pre-filled appeal the user can file.
+- dataResult         → a live table + chart answering any open-ended data question (from askData).
 Typical flow for "am I overtaxed at <address>?": verdictCard → streetMap → compsTable,
 then offer the appealPacket. For "is my county/area fair?": regressivityScatter.
 Keep any text to a one-sentence caption. The visual is the answer.

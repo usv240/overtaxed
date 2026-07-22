@@ -40,6 +40,7 @@ const FOLLOWUP = {
   worst: { label: "Most unfair areas", q: "Which Cook County neighbourhoods are the most unfairly assessed?" },
   usHome: { label: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
   ukBand: { label: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
+  ask: { label: "Ask the data anything", q: "How many Cook County homes sold for over $1M in 2023?" },
 } as const;
 
 function suggestFollowups(parts: any[]): { label: string; q: string }[] {
@@ -55,14 +56,15 @@ function suggestFollowups(parts: any[]): { label: string; q: string }[] {
     }
   }
   if (!kinds.size) return [];
-  if (kinds.has("regressivityScatter")) return [FOLLOWUP.worst, FOLLOWUP.map, FOLLOWUP.usHome];
-  if (kinds.has("regressivityMap")) return [FOLLOWUP.worst, FOLLOWUP.fair, FOLLOWUP.usHome];
-  if (kinds.has("fairnessLeaderboard")) return [FOLLOWUP.map, FOLLOWUP.fair, FOLLOWUP.usHome];
+  if (kinds.has("dataResult")) return [FOLLOWUP.map, FOLLOWUP.fair, FOLLOWUP.usHome];
+  if (kinds.has("regressivityScatter")) return [FOLLOWUP.worst, FOLLOWUP.map, FOLLOWUP.ask];
+  if (kinds.has("regressivityMap")) return [FOLLOWUP.worst, FOLLOWUP.fair, FOLLOWUP.ask];
+  if (kinds.has("fairnessLeaderboard")) return [FOLLOWUP.map, FOLLOWUP.fair, FOLLOWUP.ask];
   if (kinds.has("verdictCard") || kinds.has("streetMap") || kinds.has("appealPacket") || kinds.has("appealDebate")) {
     // UK verdicts carry GBP; US carry USD.
     return currency === "GBP"
       ? [FOLLOWUP.usHome, FOLLOWUP.fair, FOLLOWUP.map]
-      : [FOLLOWUP.fair, FOLLOWUP.map, FOLLOWUP.ukBand];
+      : [FOLLOWUP.fair, FOLLOWUP.map, FOLLOWUP.ask];
   }
   return [];
 }
@@ -288,7 +290,7 @@ export function Chat({ stats }: { stats: Stats }) {
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Enter a home address…"
+              placeholder="Enter an address, or ask the data anything…"
               className="flex-1 bg-transparent py-2.5 text-sm outline-none placeholder:text-muted"
             />
           </div>

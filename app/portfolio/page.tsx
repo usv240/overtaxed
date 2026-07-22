@@ -21,6 +21,18 @@ const statusStyle: Record<string, string> = {
   draft: "bg-surface-2 text-muted",
 };
 
+const FEDERATION_SQL = `-- One ClickHouse query spanning two engines: Postgres (OLTP) + ClickHouse (OLAP)
+SELECT s.address, a.assessed_value,
+       ls.sp AS recent_sale,
+       round(a.assessed_value / ls.sp, 3) AS ratio
+FROM postgresql('<pg-host>:5432', 'overtaxed', 'saved_properties', ...) AS s   -- OLTP
+LEFT JOIN overtaxed.assessments a ON a.pin = s.pin                             -- OLAP
+LEFT JOIN (
+  SELECT pin, argMax(sale_price, sale_date) AS sp
+  FROM overtaxed.sales GROUP BY pin                                            -- OLAP
+) ls ON ls.pin = s.pin
+WHERE s.user_id = {uid:String};`;
+
 export default async function PortfolioPage() {
   const [{ rows, elapsedMs }, appeals] = await Promise.all([getPortfolio(), getAppeals()]);
 
@@ -30,11 +42,23 @@ export default async function PortfolioPage() {
         <h1 className="text-2xl font-bold">My Portfolio</h1>
         <Link href="/app" className="text-sm text-accent underline">← back to chat</Link>
       </div>
-      <p className="mb-6 text-sm text-muted">
-        Your saved homes live in <strong>Postgres (OLTP)</strong>; each row is enriched live by a single{" "}
+      <p className="mb-3 text-sm text-muted">
+        Your saved homes live in <strong>Postgres (OLTP)</strong>. Each row is enriched live by a single{" "}
         <strong>ClickHouse (OLAP)</strong> query that federates Postgres via <code>postgresql()</code> and joins the
-        assessment + sales tables. <span className="text-muted">{elapsedMs} ms</span>
+        assessment and sales tables. One statement, two engines.
       </p>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
+          Postgres (OLTP) joined to ClickHouse (OLAP) · one query · {elapsedMs} ms
+        </span>
+      </div>
+      <details className="group mb-6 overflow-hidden rounded-xl border border-border">
+        <summary className="flex cursor-pointer list-none items-center gap-1.5 bg-surface-2 px-3 py-2 text-xs font-medium text-muted marker:content-none">
+          <span className="inline-block transition-transform group-open:rotate-90">▸</span>
+          View the federated query
+        </summary>
+        <pre className="overflow-x-auto bg-surface px-3 py-3 text-[11.5px] leading-relaxed"><code>{FEDERATION_SQL}</code></pre>
+      </details>
 
       <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">Saved properties (OLTP + OLAP)</h2>
       <div className="overflow-hidden rounded-xl border border-border">

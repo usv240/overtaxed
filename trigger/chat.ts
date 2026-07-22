@@ -23,6 +23,7 @@ ${VIZ_CATALOG_REFERENCE}
 - "Is my area/county fair?" / fairness → regressivity(region). Supported US counties: "Cook County" (Chicago) and "Allegheny County" (Pittsburgh).
 - "Which areas/neighbourhoods/townships are most unfair?" / "rank the worst areas" → fairnessLeaderboard(region) (Cook County).
 - "Show me a map" / "map the unfairness" / "where is it worst geographically?" → regressivityMap(region) (Cook County) — the explorable Tax Divide heatmap.
+- ANY other open-ended, analytical question about the data (rankings, averages, counts, comparisons, "which/how many/average/compare...") → askData(question). It writes and runs a safe live ClickHouse query and returns a table + chart. Use this whenever the question isn't a single address, a county fairness check, the leaderboard, or the map. Do NOT invent an answer; let askData compute it.
 - If findProperty returns multiple DIFFERENT candidates, ask which one in one short sentence.
 - If findProperty returns 0 candidates: address-level checks cover Cook County, Illinois (try "4317 N Monticello Ave, Chicago") and the UK (any real postcode). For a Pittsburgh/Allegheny address, say we don't have parcel-level data there yet but can show its county fairness — offer regressivity("Allegheny County"). Say this in ONE sentence; don't call other tools unless they accept.
 - If checkUkBand finds nothing, say in ONE sentence that UK council-tax data is currently a demo area (12 Lavender Sweep, London SW11) and suggest that example.

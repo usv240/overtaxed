@@ -10,6 +10,7 @@ import {
   getFairnessLeaderboard,
   getRegressivityMap,
 } from "@/lib/queries";
+import { askData } from "@/lib/ask-data";
 import { appealDebate } from "./debate";
 import type { VizSpec } from "@/lib/viz-catalog";
 
@@ -146,8 +147,22 @@ export const regressivityMapTool = tool({
   },
 });
 
+export const askDataTool = tool({
+  description:
+    "Answer ANY open-ended, analytical question about the property data by writing and running a safe, live ClickHouse query, returned as a table + chart. Use for exploratory questions that are NOT a single-address lookup, a county fairness check, or the map — e.g. 'which areas overpay most for homes under $300k?', 'average assessment by build class', 'how many Cook County homes sold over $1M in 2023?', 'compare over-assessment between Cook and Allegheny'. Do NOT use for a specific address (use findProperty) or 'is my county fair' (use regressivity).",
+  inputSchema: z.object({
+    question: z.string().describe("the user's analytical question, verbatim or lightly cleaned"),
+  }),
+  execute: async ({ question }) => {
+    const { spec, elapsedMs, error } = await askData(question);
+    if (!spec) return { visuals: [] as VizSpec[], elapsedMs, message: error ?? "Couldn't answer that one from the data." };
+    return { visuals: [spec], elapsedMs, rowsRead: spec.rows.length };
+  },
+});
+
 export const overtaxedTools = {
   findProperty: findPropertyTool,
+  askData: askDataTool,
   checkUkBand: checkUkBandTool,
   debateAppeal: debateAppealTool,
   fairnessLeaderboard: fairnessLeaderboardTool,

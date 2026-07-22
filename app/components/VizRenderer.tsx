@@ -7,7 +7,7 @@ import { InfoTip } from "./InfoTip";
 import { Icon } from "./Icon";
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine,
-  ResponsiveContainer, Cell,
+  ResponsiveContainer, Cell, BarChart, Bar, LineChart, Line,
 } from "recharts";
 import type { VizSpec } from "@/lib/viz-catalog";
 
@@ -296,9 +296,87 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
       );
     }
 
+    case "dataResult":
+      return <DataResultCard spec={spec} ms={ms} />;
+
     default:
       return null;
   }
+}
+
+/** Free-form answer: the agent wrote a live ClickHouse query; we show the chart, the table, and the SQL. */
+function DataResultCard({ spec, ms }: { spec: Extract<VizSpec, { kind: "dataResult" }>; ms?: number }) {
+  const fmtCell = (v: string | number | null) =>
+    v == null ? "" : typeof v === "number" ? v.toLocaleString("en-US") : v;
+  const chartData =
+    spec.chart && spec.rows.length
+      ? spec.rows.map((r) => ({
+          x: String(r[spec.chart!.xIndex] ?? ""),
+          y: Number(r[spec.chart!.yIndex] ?? 0),
+        }))
+      : [];
+  const shown = spec.rows.slice(0, 12);
+
+  return (
+    <Card>
+      <div className="mb-1 flex items-center gap-1.5">
+        <Icon name="zap" size={16} className="text-accent" />
+        <h4 className="font-semibold">Live from ClickHouse</h4>
+      </div>
+      {spec.caption && <p className="mb-2 text-sm text-muted">{spec.caption}</p>}
+
+      {spec.chart && chartData.length > 0 && (
+        <div className="mt-1 h-56 w-full">
+          <ResponsiveContainer>
+            {spec.chart.type === "line" ? (
+              <LineChart data={chartData} margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="x" tick={{ fontSize: 11, fill: "var(--muted)" }} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--muted)" }} width={52} tickFormatter={(v) => Number(v).toLocaleString()} />
+                <Tooltip formatter={(v) => Number(v).toLocaleString()} />
+                <Line type="monotone" dataKey="y" stroke="var(--accent)" strokeWidth={2} dot={false} name={spec.columns[spec.chart.yIndex]} />
+              </LineChart>
+            ) : (
+              <BarChart data={chartData} margin={{ top: 8, right: 12, bottom: 4, left: 4 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="x" tick={{ fontSize: 11, fill: "var(--muted)" }} interval={0} angle={chartData.length > 6 ? -20 : 0} textAnchor={chartData.length > 6 ? "end" : "middle"} height={chartData.length > 6 ? 46 : 24} />
+                <YAxis tick={{ fontSize: 11, fill: "var(--muted)" }} width={52} tickFormatter={(v) => Number(v).toLocaleString()} />
+                <Tooltip formatter={(v) => Number(v).toLocaleString()} />
+                <Bar dataKey="y" fill="var(--accent)" radius={[4, 4, 0, 0]} name={spec.columns[spec.chart.yIndex]} />
+              </BarChart>
+            )}
+          </ResponsiveContainer>
+        </div>
+      )}
+
+      <div className="mt-2 overflow-x-auto rounded-lg border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-surface-2 text-left text-xs text-muted">
+            <tr>{spec.columns.map((c) => <th key={c} className="whitespace-nowrap px-3 py-1.5 font-semibold">{c}</th>)}</tr>
+          </thead>
+          <tbody>
+            {shown.map((r, i) => (
+              <tr key={i} className="border-t border-border">
+                {r.map((v, j) => <td key={j} className="whitespace-nowrap px-3 py-1.5 tabular-nums">{fmtCell(v)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {spec.rows.length > shown.length && (
+        <p className="mt-1 text-[11px] text-muted">Showing {shown.length} of {spec.rows.length} rows.</p>
+      )}
+
+      <details className="group mt-2 rounded-lg border border-border bg-surface-2/50 px-3 py-2">
+        <summary className="flex cursor-pointer list-none items-center text-xs font-medium text-muted marker:content-none">
+          <span className="mr-1 inline-block transition-transform group-open:rotate-90">▸</span>
+          View the ClickHouse query the agent wrote
+        </summary>
+        <pre className="mt-2 overflow-x-auto text-[11.5px] leading-relaxed text-foreground"><code>{spec.sql}</code></pre>
+      </details>
+      <Badge ms={ms} rows={spec.rows.length} />
+    </Card>
+  );
 }
 
 /** Files the appeal to Postgres (OLTP), then links to the portfolio. */
