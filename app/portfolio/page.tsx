@@ -4,7 +4,7 @@ import { getPortfolio, getAppeals } from "@/lib/portfolio";
 export const dynamic = "force-dynamic";
 
 const money = (n: number | null, c = "USD") =>
-  n == null ? "—" : new Intl.NumberFormat("en", { style: "currency", currency: c, maximumFractionDigits: 0 }).format(n);
+  n == null ? "n/a" : new Intl.NumberFormat("en", { style: "currency", currency: c, maximumFractionDigits: 0 }).format(n);
 
 function ratioColor(r: number | null) {
   if (r == null) return "#94a3b8";
@@ -36,7 +36,7 @@ export default async function PortfolioPage() {
         assessment + sales tables. <span className="text-muted">{elapsedMs} ms</span>
       </p>
 
-      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">Saved properties (OLTP ⋈ OLAP)</h2>
+      <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">Saved properties (OLTP + OLAP)</h2>
       <div className="overflow-hidden rounded-xl border border-border">
         <table className="w-full text-sm">
           <thead className="bg-surface-2 text-left text-muted">
@@ -44,7 +44,7 @@ export default async function PortfolioPage() {
           </thead>
           <tbody>
             {rows.length === 0 && (
-              <tr><td colSpan={4} className="p-4 text-center text-muted">No saved properties yet — file an appeal from the chat.</td></tr>
+              <tr><td colSpan={4} className="p-4 text-center text-muted">No saved properties yet. File an appeal from the chat.</td></tr>
             )}
             {rows.map((r, i) => (
               <tr key={i} className="border-t border-border">
@@ -53,7 +53,7 @@ export default async function PortfolioPage() {
                 <td>{money(r.recentSale, r.country === "UK" ? "GBP" : "USD")}</td>
                 <td>
                   {r.ratio != null && <span className="inline-block h-2.5 w-2.5 rounded-full align-middle" style={{ background: ratioColor(r.ratio) }} />}{" "}
-                  {r.ratio ?? "—"}
+                  {r.ratio ?? "n/a"}
                 </td>
               </tr>
             ))}

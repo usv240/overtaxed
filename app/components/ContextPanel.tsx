@@ -15,7 +15,7 @@ function Label({ children }: { children: React.ReactNode }) {
   return <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted">{children}</div>;
 }
 
-/** Persistent context sidebar — always-visible substance so the app never feels empty. */
+/** Persistent context sidebar: always-visible substance so the app never feels empty. */
 export function ContextPanel({ stats }: { stats: Stats }) {
   return (
     <div className="space-y-7 p-5 text-sm">
@@ -37,7 +37,7 @@ export function ContextPanel({ stats }: { stats: Stats }) {
         <a href="/methodology" className="mt-2 block rounded-xl border border-accent/30 bg-accent-soft p-3">
           <div className="text-lg font-bold tracking-tight text-accent">~{usd(stats.nationalAnnual)}/yr</div>
           <div className="mt-0.5 text-xs leading-snug text-muted">
-            projected US-wide if Cook&apos;s measured bias holds nationally — the same regressivity national studies document. <span className="underline">See the maths →</span>
+            projected US-wide if Cook&apos;s measured bias holds nationally, the same regressivity national studies document. <span className="underline">See the maths.</span>
           </div>
         </a>
       </div>
@@ -45,8 +45,8 @@ export function ContextPanel({ stats }: { stats: Stats }) {
       <div>
         <Label>Coverage</Label>
         <ul className="space-y-1.5 text-muted">
-          <li className="flex gap-2"><Icon name="check" size={15} className="mt-0.5 shrink-0 text-pos" /> US — Cook County (Chicago) &amp; Allegheny (Pittsburgh)</li>
-          <li className="flex gap-2"><Icon name="check" size={15} className="mt-0.5 shrink-0 text-pos" /> UK — national, real bands fetched live from the VOA</li>
+          <li className="flex gap-2"><Icon name="check" size={15} className="mt-0.5 shrink-0 text-pos" /> US: Cook County (Chicago) and Allegheny (Pittsburgh)</li>
+          <li className="flex gap-2"><Icon name="check" size={15} className="mt-0.5 shrink-0 text-pos" /> UK: national, real bands fetched live from the VOA</li>
         </ul>
       </div>
 
@@ -55,15 +55,15 @@ export function ContextPanel({ stats }: { stats: Stats }) {
         <ul className="space-y-2.5">
           <li className="flex gap-2.5">
             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent"><Icon name="zap" size={14} /></span>
-            <span className="text-muted"><strong className="text-foreground">ClickHouse</strong> — primary database; comps, regressivity &amp; impact computed sub-second over millions of rows.</span>
+            <span className="text-muted"><strong className="text-foreground">ClickHouse</strong> is the primary database. Comps, regressivity and impact are computed sub-second over millions of rows.</span>
           </li>
           <li className="flex gap-2.5">
             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent"><Icon name="message" size={14} /></span>
-            <span className="text-muted"><strong className="text-foreground">Trigger.dev</strong> — <code className="text-xs">chat.agent()</code> orchestration + a durable sub-task that runs the for-vs-against debate.</span>
+            <span className="text-muted"><strong className="text-foreground">Trigger.dev</strong> runs the <code className="text-xs">chat.agent()</code> orchestration, plus a durable sub-task for the for-vs-against debate.</span>
           </li>
           <li className="flex gap-2.5">
             <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent"><Icon name="file" size={14} /></span>
-            <span className="text-muted"><strong className="text-foreground">Postgres ⋈ ClickHouse</strong> — your saved appeals (OLTP) joined live to the analytics (OLAP).</span>
+            <span className="text-muted"><strong className="text-foreground">Postgres and ClickHouse</strong> together: your saved appeals (OLTP) joined live to the analytics (OLAP).</span>
           </li>
         </ul>
       </div>
@@ -71,7 +71,7 @@ export function ContextPanel({ stats }: { stats: Stats }) {
       <div>
         <Label>How it works</Label>
         <ol className="space-y-2">
-          {["Type any address", "We compare it to real nearby sales", "Get a verdict, a map & a ready-to-file appeal"].map((t, i) => (
+          {["Type any address", "We compare it to real nearby sales", "Get a verdict, a map and a ready-to-file appeal"].map((t, i) => (
             <li key={t} className="flex gap-2.5 text-muted">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-accent-fg">{i + 1}</span>
               {t}
@@ -80,7 +80,7 @@ export function ContextPanel({ stats }: { stats: Stats }) {
         </ol>
       </div>
 
-      <p className="text-[11px] leading-relaxed text-muted">Estimates from public records — not tax or legal advice.</p>
+      <p className="text-[11px] leading-relaxed text-muted">Estimates from public records. Not tax or legal advice.</p>
     </div>
   );
 }

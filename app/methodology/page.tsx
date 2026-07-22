@@ -118,7 +118,7 @@ export default async function MethodologyPage() {
         below is transparent so you can check our work.
       </p>
 
-      <h2 className="mb-1 mt-6 font-semibold">The bigger picture — the potential impact</h2>
+      <h2 className="mb-1 mt-6 font-semibold">The bigger picture: the potential impact</h2>
       <div className="rounded-xl border border-accent/30 bg-accent-soft p-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -132,16 +132,16 @@ export default async function MethodologyPage() {
         </div>
         <p className="mt-3 text-sm text-muted">
           We <strong>measure</strong> {usd0(cookAnnual)}/yr of regressive over-assessment in Cook County, live over real
-          parcels. Scaling that by owner-occupied homes — Cook&apos;s ~{compact(COOK_RESIDENTIAL_PARCELS)} residential
-          parcels vs ~{compact(US_OWNER_OCCUPIED_HOMES)} US owner-occupied homes — gives an order-of-magnitude US figure of
+          parcels. Scaling that by owner-occupied homes (Cook&apos;s ~{compact(COOK_RESIDENTIAL_PARCELS)} residential
+          parcels vs ~{compact(US_OWNER_OCCUPIED_HOMES)} US owner-occupied homes) gives an order-of-magnitude US figure of
           <strong className="text-foreground"> ~${compact(usAnnual)} a year</strong>. This is a transparent projection, not a
-          measurement — but it isn&apos;t a guess: independent national studies find the <em>same</em> regressive assessment
+          measurement, but it isn&apos;t a guess: independent national studies find the <em>same</em> regressive assessment
           pattern across most US jurisdictions (Avenancio-León &amp; Howard, <em>The Assessment Gap</em>, QJE 2022, ~118M
           homes; C. Berry, <em>Reassessing the Property Tax</em>, Univ. of Chicago). The UK figure is ~{compact(UK_MISBANDED_HOMES)}
           widely-reported mis-banded homes × a typical one-band annual error.
         </p>
         <p className="mt-2 text-xs text-muted">
-          The point: Cook County is one instance of a national, systemic bias — and the exact same pipeline already
+          The point: Cook County is one instance of a national, systemic bias, and the exact same pipeline already
           generalises (we added Allegheny County and the UK with no code changes).
         </p>
       </div>
@@ -151,47 +151,47 @@ export default async function MethodologyPage() {
         {rows.map((r) => <Row key={r.metric} k={r.metric} v={<strong>{fmt(r.n)}</strong>} />)}
       </div>
       <ul className="mt-2 space-y-1 text-sm text-muted">
-        <li>• US: <a className="underline" href="https://datacatalog.cookcountyil.gov/">Cook County Assessor Open Data</a> (Parcel Universe, Addresses, Assessed Values, Sales) and <a className="underline" href="https://data.wprdc.org/dataset/property-assessments">Allegheny County (WPRDC)</a> — two counties, proving the pipeline generalises.</li>
+        <li>• US: <a className="underline" href="https://datacatalog.cookcountyil.gov/">Cook County Assessor Open Data</a> (Parcel Universe, Addresses, Assessed Values, Sales) and <a className="underline" href="https://data.wprdc.org/dataset/property-assessments">Allegheny County (WPRDC)</a>. Two counties, proving the pipeline generalises.</li>
         <li>• UK: <a className="underline" href="https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads">HM Land Registry Price Paid Data</a> (Open Government Licence).</li>
       </ul>
 
       <h2 className="mb-1 mt-6 font-semibold">Computed live (no hardcoded numbers)</h2>
       <ul className="space-y-1 text-sm text-muted">
-        <li>• <strong>Comparable sales</strong> — nearest arms-length sales by <code>geoDistance()</code>.</li>
-        <li>• <strong>Over-assessment</strong> — your assessment ratio vs the local (≤2km) neighbourhood median.</li>
-        <li>• <strong>Regressivity</strong> — <strong>PRD</strong> (Price-Related Differential) and <strong>COD</strong> (Coefficient of Dispersion), the standard IAAO uniformity metrics, over every sold parcel in the county.</li>
-        <li>• <strong>UK band check</strong> — <strong>real bands fetched live from the VOA</strong> band-check service for your postcode (cached in ClickHouse), then a neighbour-band comparison + back-cast of local sale prices to their 1991 value. The £ overpayment uses your council&apos;s <strong>real Band D charge</strong> (gov.uk, loaded live).</li>
+        <li>• <strong>Comparable sales:</strong> nearest arms-length sales by <code>geoDistance()</code>.</li>
+        <li>• <strong>Over-assessment:</strong> your assessment ratio vs the local (≤2km) neighbourhood median.</li>
+        <li>• <strong>Regressivity:</strong> <strong>PRD</strong> (Price-Related Differential) and <strong>COD</strong> (Coefficient of Dispersion), the standard IAAO uniformity metrics, over every sold parcel in the county.</li>
+        <li>• <strong>UK band check:</strong> <strong>real bands fetched live from the VOA</strong> band-check service for your postcode (cached in ClickHouse), then a neighbour-band comparison plus a back-cast of local sale prices to their 1991 value. The £ overpayment uses your council&apos;s <strong>real Band D charge</strong> (gov.uk, loaded live).</li>
       </ul>
 
       <h2 className="mb-1 mt-8 font-semibold">The actual ClickHouse queries</h2>
       <p className="mb-1 text-sm text-muted">
-        Nothing here is mocked — these are the real queries behind the answers. ClickHouse is the primary database;
+        Nothing here is mocked. These are the real queries behind the answers. ClickHouse is the primary database;
         every figure is computed live over millions of rows.
       </p>
       <Sql
-        title="Regressivity — PRD &amp; COD"
+        title="Regressivity: PRD &amp; COD"
         note="IAAO uniformity science, sub-second"
         code={Q_REGRESSIVITY}
       />
       <Sql
-        title="The Tax Divide — spatial grid"
-        note="1.6M parcels → ~1,800 cells, ~200 ms"
+        title="The Tax Divide: spatial grid"
+        note="1.6M parcels to ~1,800 cells, ~200 ms"
         code={Q_HEATMAP}
       />
       <Sql
-        title="OLTP + OLAP federation — postgresql()"
+        title="OLTP + OLAP federation: postgresql()"
         note="Postgres joined to ClickHouse in one statement"
         code={Q_FEDERATION}
       />
       <Sql
-        title="Zero-ETL ingestion — url()"
+        title="Zero-ETL ingestion: url()"
         note="Raw government CSVs read straight off HTTP"
         code={Q_INGEST}
       />
 
-      <h2 className="mb-1 mt-8 font-semibold">Reference inputs (statutory / published — with sources)</h2>
+      <h2 className="mb-1 mt-8 font-semibold">Reference inputs (statutory / published, with sources)</h2>
       <div className="space-y-2 text-sm text-muted">
-        <p>These few values are external inputs (not derivable from sales data). They live in one place — <code>lib/assumptions.ts</code> — each cited:</p>
+        <p>These few values are external inputs (not derivable from sales data). They live in one place, <code>lib/assumptions.ts</code>, each cited:</p>
         <Row k="Cook County effective tax rate" v="~2.5% · Cook County Treasurer" />
         <Row k="Cook County assessment level" v="10% of market · 35 ILCS 200" />
         <Row k="UK band ratios (A–H vs D)" v="statutory · LGFA 1992 s.5" />

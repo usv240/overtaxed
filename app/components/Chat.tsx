@@ -99,7 +99,7 @@ export function Chat({ stats }: { stats: Stats }) {
   };
 
   useEffect(() => {
-    // only auto-scroll if the user is already at the bottom — never yank them up
+    // only auto-scroll if the user is already at the bottom, never yank them up
     const el = scrollRef.current;
     if (el && atBottomRef.current) el.scrollTop = el.scrollHeight;
   }, [messages, status]);
@@ -136,13 +136,16 @@ export function Chat({ stats }: { stats: Stats }) {
       <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-4 py-6">
           {empty ? (
-            <div className="flex flex-col items-center pt-8 text-center sm:pt-16">
-              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent shadow-sm">
+            <div className="hero-glow flex flex-col items-center rounded-3xl pt-8 text-center sm:pt-16">
+              <div className="mb-2.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-muted shadow-sm">
+                <span className="h-1.5 w-1.5 rounded-full bg-pos" /> Property tax, made visual
+              </div>
+              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent shadow-md ring-1 ring-accent/10">
                 <Icon name="home" size={30} />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">What home should we check?</h1>
-              <p className="mt-2 max-w-md text-muted">
-                Type any address — you&apos;ll get a picture back: a verdict, a map of your street, and a ready-to-file appeal. Not a wall of text.
+              <h1 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-4xl">What home should we check?</h1>
+              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
+                Type any address and get a picture back: a verdict, a map of your street, and a ready-to-file appeal. Not a wall of text.
               </p>
               <div className="mt-8 grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {EXAMPLES.map((e) => (
@@ -160,19 +163,19 @@ export function Chat({ stats }: { stats: Stats }) {
                 ))}
               </div>
 
-              {/* The bigger picture — national potential, projected from the live Cook figure */}
+              {/* The bigger picture: national potential, projected from the live Cook figure */}
               <div className="mt-12 w-full max-w-2xl rounded-2xl border border-accent/25 bg-accent-soft px-5 py-5 text-center">
                 <div className="text-3xl font-bold tracking-tight text-accent sm:text-4xl">
                   ~${compactN(stats.nationalAnnual)}/yr
                 </div>
                 <p className="mx-auto mt-1.5 max-w-lg text-sm text-muted">
-                  over-shifted onto lower-value US homes by biased assessments — a transparent projection from the
+                  over-shifted onto lower-value US homes by biased assessments. A transparent projection from the
                   <strong className="text-foreground"> ${compactN(stats.impactAnnual)}</strong> we measure live in Cook County alone.{" "}
-                  <a href="/methodology" className="text-accent underline">See the maths →</a>
+                  <a href="/methodology" className="font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">See the maths.</a>
                 </p>
               </div>
 
-              {/* Why it's worth checking — plain-English impact / savings */}
+              {/* Why it's worth checking: plain-English impact / savings */}
               <div className="mt-10 w-full max-w-2xl border-t border-border pt-8">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted">Why it&apos;s worth 10 seconds</p>
                 <div className="grid gap-3 sm:grid-cols-3">
@@ -188,7 +191,7 @@ export function Chat({ stats }: { stats: Stats }) {
                   ))}
                 </div>
                 <p className="mt-5 text-center text-sm text-muted">
-                  You could be owed <strong className="text-foreground">thousands</strong>. It&apos;s free, takes seconds, and we hand you the appeal — you decide what to do.
+                  You could be owed <strong className="text-foreground">thousands</strong>. It&apos;s free, takes seconds, and we hand you the appeal, so you decide what to do.
                 </p>
               </div>
             </div>

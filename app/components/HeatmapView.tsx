@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { RegressivityMap } from "@/lib/viz-catalog";
 
-/** THE TAX DIVIDE — an explorable heatmap of over-assessment. Each cell coloured
+/** THE TAX DIVIDE: an explorable heatmap of over-assessment. Each cell coloured
  * by its homes' assessment ratio (red = assessed above what they sell for). */
 export default function HeatmapView({ spec }: { spec: RegressivityMap }) {
   const ref = useRef<HTMLDivElement>(null);

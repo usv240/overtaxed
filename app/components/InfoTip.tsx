@@ -4,7 +4,7 @@ import { useState } from "react";
 
 /**
  * A small "i" button that reveals a plain-English explanation on hover/tap.
- * Used to demystify every term and control — no technical guide needed.
+ * Used to demystify every term and control; no technical guide needed.
  */
 export function InfoTip({ label, children }: { label?: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);

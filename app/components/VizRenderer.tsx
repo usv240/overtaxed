@@ -23,10 +23,10 @@ const HeatmapView = dynamic(() => import("./HeatmapView"), {
 /** Colour a parcel by how over/under-assessed it is (ratio vs 1.0). */
 function ratioColor(ratio: number | null): string {
   if (ratio == null) return "#94a3b8";
-  if (ratio >= 1.15) return "#dc2626"; // deep red — badly over-assessed
+  if (ratio >= 1.15) return "#dc2626"; // deep red = badly over-assessed
   if (ratio >= 1.05) return "#f97316"; // orange
-  if (ratio >= 0.97) return "#22c55e"; // green — fair
-  return "#3b82f6"; // blue — under-assessed
+  if (ratio >= 0.97) return "#22c55e"; // green = fair
+  return "#3b82f6"; // blue = under-assessed
 }
 
 const money = (n: number, c: "USD" | "GBP" = "USD") =>
@@ -63,7 +63,7 @@ function Simple({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Collapsible "show the maths" — the technical breakdown for anyone who wants it. */
+/** Collapsible "show the maths": the technical breakdown for anyone who wants it. */
 function TechDetails({ rows, children }: { rows?: { label: string; value: string }[]; children?: React.ReactNode }) {
   if (!rows?.length && !children) return null;
   return (
@@ -118,7 +118,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
             <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-pos/10 px-3 py-1.5 text-sm font-medium text-pos">
               <Icon name="check" size={15} className="shrink-0" />
               Reclaim about {money(spec.overpaymentPerPeriod, spec.currency)}/yr by appealing
-              {spec.owedBack ? <> — plus {money(spec.owedBack, spec.currency)} backdated</> : null}.
+              {spec.owedBack ? <>, plus {money(spec.owedBack, spec.currency)} backdated</> : null}.
             </div>
           )}
           <TechDetails rows={spec.technicalRows} />
@@ -192,7 +192,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
     case "appealPacket":
       return (
         <Card>
-          <h4 className="font-semibold">Appeal packet — {spec.jurisdiction}</h4>
+          <h4 className="font-semibold">Appeal packet: {spec.jurisdiction}</h4>
           <p className="text-sm text-muted">{spec.summary}</p>
           <dl className="mt-2 grid grid-cols-2 gap-1 text-sm">
             {spec.fields.map((f, i) => (
@@ -209,9 +209,9 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
               </a>
             )}
             <FileAppealButton spec={spec} />
-            {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-accent underline">official filing site →</a>}
+            {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-accent underline underline-offset-2">official filing site</a>}
           </div>
-          <p className="mt-2 text-[11px] text-muted">The PDF is a complete Board of Review residential complaint — grounds, proposed value and a comparable-properties evidence grid, filled from live records.</p>
+          <p className="mt-2 text-[11px] text-muted">The PDF is a complete Board of Review residential complaint: grounds, proposed value, and a comparable-properties evidence grid, filled from live records.</p>
         </Card>
       );
 
@@ -219,7 +219,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
       return (
         <Card>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <h4 className="font-semibold">The Tax Divide — {spec.region}, live</h4>
+            <h4 className="font-semibold">The Tax Divide: {spec.region}, live</h4>
             <div className="flex items-center gap-1.5 text-[11px] text-muted">
               <span>under</span>
               <span className="h-2.5 w-24 rounded" style={{ background: "linear-gradient(90deg,#1e40af,#93c5fd,#fde68a,#f97316,#b91c1c)" }} />
@@ -228,7 +228,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
           </div>
           <HeatmapView spec={spec} />
           {spec.caption && <p className="mt-1 text-xs text-muted">{spec.caption}</p>}
-          <Simple>In plain terms: the red pockets are where the tax office values homes <em>above</em> what they actually sell for. Zoom in and click any area — this is computed live over every sold parcel, in ClickHouse.</Simple>
+          <Simple>In plain terms: the red pockets are where the tax office values homes <em>above</em> what they actually sell for. Zoom in and click any area. This is computed live over every sold parcel, in ClickHouse.</Simple>
           <Badge ms={ms} rows={rows} />
         </Card>
       );
@@ -240,8 +240,8 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
           <h4 className="font-semibold">Most unfairly-assessed areas in {spec.region}</h4>
           <p className="text-sm text-muted">
             Ranked by PRD
-            <InfoTip label="PRD — the fairness score">Above 1.03 means cheaper homes are taxed at a higher rate than expensive ones. Higher = more unfair.</InfoTip>
-            {" "}— higher bars = cheaper homes carry more of the burden.
+            <InfoTip label="PRD, the fairness score">Above 1.03 means cheaper homes are taxed at a higher rate than expensive ones. Higher means more unfair.</InfoTip>
+            . Higher bars mean cheaper homes carry more of the burden.
           </p>
           <div className="mt-3 space-y-1.5">
             {spec.areas.map((a, i) => (
@@ -302,7 +302,7 @@ function FileAppealButton({ spec }: { spec: Extract<VizSpec, { kind: "appealPack
   if (done)
     return (
       <span className="text-sm text-pos">
-        ✓ Filed &amp; saved · <a href="/portfolio" className="underline">view portfolio →</a>
+        <Icon name="check" size={14} className="mr-1 inline text-pos" /> Filed and saved · <a href="/portfolio" className="underline underline-offset-2">view portfolio</a>
       </span>
     );
   return (
@@ -328,7 +328,7 @@ function FileAppealButton({ spec }: { spec: Extract<VizSpec, { kind: "appealPack
   );
 }
 
-/** Interactive regressivity — a price slider that recomputes PRD/COD/impact live over ClickHouse. */
+/** Interactive regressivity: a price slider that recomputes PRD/COD/impact live over ClickHouse. */
 function RegressivityCard({
   initial, initialMs, rows,
 }: { initial: Extract<VizSpec, { kind: "regressivityScatter" }>; initialMs?: number; rows?: number }) {
@@ -357,13 +357,13 @@ function RegressivityCard({
       <h4 className="font-semibold">Is {spec.region} assessed fairly?</h4>
       <p className="text-sm text-muted">
         PRD <strong className={spec.prd > 1.03 ? "text-neg" : "text-pos"}>{spec.prd}</strong>
-        <InfoTip label="PRD — the fairness score">
+        <InfoTip label="PRD, the fairness score">
           Price-Related Differential. Above <strong>1.03</strong> means cheaper homes are taxed at a higher rate
-          than expensive ones — the system quietly favours the wealthy. The official measure assessors use.
+          than expensive ones, so the system quietly favours the wealthy. The official measure assessors use.
         </InfoTip>
         {" "}· COD <strong>{spec.cod}</strong>
-        <InfoTip label="COD — the consistency score">
-          Coefficient of Dispersion — how much assessments bounce around for similar homes. Lower is fairer;
+        <InfoTip label="COD, the consistency score">
+          Coefficient of Dispersion: how much assessments bounce around for similar homes. Lower is fairer;
           assessors aim for under 15.
         </InfoTip>
         {spec.nParcels != null && <span className="text-muted"> · {spec.nParcels.toLocaleString()} parcels</span>}
@@ -382,7 +382,7 @@ function RegressivityCard({
           className="mt-1.5 w-full accent-[var(--accent)]"
           aria-label="Minimum home price"
         />
-        <p className="text-[11px] text-muted">Drag up to watch the unfairness shrink among pricier homes — each move recomputes over ClickHouse.</p>
+        <p className="text-[11px] text-muted">Drag up to watch the unfairness shrink among pricier homes. Each move recomputes over ClickHouse.</p>
       </div>
 
       <div className="mt-2 h-64 w-full">
@@ -422,7 +422,7 @@ function RegressivityCard({
           </div>
           <p className="mt-1.5 text-sm leading-relaxed">
             <strong>{spec.impact.overAssessedPct}%</strong> of homes here are over-assessed versus a fair system.
-            Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong> a year —
+            Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong> a year,
             and that&apos;s only from the {spec.impact.soldSample.toLocaleString()} homes sold last year.
             The typical over-assessed lower-value home pays <strong>{money(spec.impact.avgOverpayBelow)}</strong> too much.
           </p>
@@ -443,9 +443,9 @@ function RegressivityCard({
           { label: "Parcels analysed", value: (spec.nParcels ?? 0).toLocaleString() },
         ]}
       >
-        PRD = mean assessment ratio ÷ sale-weighted mean ratio; above 1.03 signals regressivity. COD = average %
-        deviation of ratios from the median. Both are the standard IAAO uniformity metrics, computed live over
-        every sold parcel — and re-computed each time you move the slider.
+        PRD is the mean assessment ratio divided by the sale-weighted mean ratio; above 1.03 signals regressivity.
+        COD is the average percent deviation of ratios from the median. Both are the standard IAAO uniformity
+        metrics, computed live over every sold parcel, and re-computed each time you move the slider.
       </TechDetails>
       <Badge ms={ms} rows={rows ?? spec.nParcels} />
     </Card>

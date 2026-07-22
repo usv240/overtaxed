@@ -5,7 +5,7 @@ import { Icon } from "@/app/components/Icon";
 import { getRegressivity } from "@/lib/queries";
 
 export const metadata = {
-  title: "Overtaxed — are you overpaying on your home?",
+  title: "Overtaxed: are you overpaying on your home?",
   description: "Check if your home is taxed too high, see the proof on a map, and get a ready-to-file appeal. Free, no sign-up.",
 };
 
@@ -49,7 +49,7 @@ function Faq({ q, a }: { q: string; a: React.ReactNode }) {
   return (
     <details className="group rounded-xl border border-border bg-surface px-4 py-3.5">
       <summary className="flex cursor-pointer list-none items-center font-medium marker:content-none">
-        <span className="mr-3 text-accent transition-transform group-open:rotate-45">＋</span>
+        <span className="mr-3 text-lg font-normal leading-none text-accent transition-transform group-open:rotate-45">+</span>
         {q}
       </summary>
       <p className="mt-2 pl-7 text-sm leading-relaxed text-muted">{a}</p>
@@ -92,11 +92,11 @@ export default async function Landing() {
             You could be overpaying<br />tax on your home.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            The tax office often values homes too high — and almost nobody checks. Type your address and see if
+            The tax office often values homes too high, and almost nobody checks. Type your address and see if
             you&apos;re one of them, with the proof on a map, in seconds.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/app" className="w-full rounded-full bg-accent px-7 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg sm:w-auto">Check my home — free →</Link>
+            <Link href="/app" className="w-full rounded-full bg-accent px-7 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg sm:w-auto">Check my home, free</Link>
             <a href="#how" className="w-full rounded-full border border-border bg-surface px-7 py-3.5 font-medium shadow-sm transition-colors hover:bg-surface-2 sm:w-auto">See how it works</a>
           </div>
           <p className="mt-4 text-xs text-muted">No sign-up. It&apos;s an estimate from public records, not tax advice.</p>
@@ -115,9 +115,9 @@ export default async function Landing() {
         <Kicker>The quiet problem</Kicker>
         <h2 className="mb-8 text-center text-3xl font-bold tracking-tight">Millions overpay. Almost nobody checks.</h2>
         <div className="grid gap-4 sm:grid-cols-3">
-          <Stat big="30–60%" small={<>of US homes are over-assessed — valued too high for tax.</>} />
+          <Stat big="30–60%" small={<>of US homes are over-assessed, valued too high for tax.</>} />
           <Stat big="400,000+" small="UK homes are in the wrong council tax band, stuck on a rushed 1991 valuation." />
-          <Stat big="< 1 in 20" small="people ever challenge it — yet winning saves $1,000–3,000 (or £1,000s) a year." />
+          <Stat big="< 1 in 20" small="people ever challenge it, yet winning saves $1,000–3,000 (or £1,000s) a year." />
         </div>
       </section>
 
@@ -131,7 +131,7 @@ export default async function Landing() {
               quietly shifted onto lower-value homeowners.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-muted">
-              {impact.overAssessedPct}% of homes are over-assessed versus a fair system — the typical over-assessed
+              {impact.overAssessedPct}% of homes are over-assessed versus a fair system. The typical over-assessed
               lower-value home overpays about <strong className="text-foreground">{usd0(impact.avgOverpayBelow)}</strong>{" "}
               a year. Not a guess: computed live from public records. We help you claim your share back.
             </p>
@@ -144,9 +144,9 @@ export default async function Landing() {
         <div className="mx-auto max-w-5xl px-4 py-16">
           <Kicker>How it works</Kicker>
           <h2 className="mb-2 text-center text-3xl font-bold tracking-tight">Three steps. No jargon.</h2>
-          <p className="mx-auto mb-10 max-w-xl text-center text-muted">No sign-up, no spreadsheets — just your address.</p>
+          <p className="mx-auto mb-10 max-w-xl text-center text-muted">No sign-up, no spreadsheets, just your address.</p>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Step n={1} title="Type your address">Just your home address — nothing else. We look it up in public property records.</Step>
+            <Step n={1} title="Type your address">Just your home address, nothing else. We look it up in public property records.</Step>
             <Step n={2} title="We compare it to real sales next door">We pull millions of real, recent sales of homes like yours nearby and work out what yours is really worth.</Step>
             <Step n={3} title="See if you're overpaying">A clear verdict, a map of your street, and a ready-to-send appeal. What you do next is up to you.</Step>
           </div>
@@ -170,20 +170,20 @@ export default async function Landing() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-border bg-surface p-7 shadow-sm">
             <span className="inline-flex items-center rounded-md border border-border bg-surface-2 px-2 py-1 text-xs font-semibold tracking-wide text-muted">US</span>
-            <h3 className="mt-3 text-lg font-semibold">United States — property tax</h3>
+            <h3 className="mt-3 text-lg font-semibold">United States: property tax</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
               Starting with Cook County (Chicago). We check if your home is over-assessed
-              <InfoTip label="Over-assessed">The tax office thinks your home is worth more than it really is — so your tax bill is too high.</InfoTip>{" "}
+              <InfoTip label="Over-assessed">The tax office thinks your home is worth more than it really is, so your tax bill is too high.</InfoTip>{" "}
               versus real nearby sales.
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-surface p-7 shadow-sm">
             <span className="inline-flex items-center rounded-md border border-border bg-surface-2 px-2 py-1 text-xs font-semibold tracking-wide text-muted">UK</span>
-            <h3 className="mt-3 text-lg font-semibold">United Kingdom — council tax band</h3>
+            <h3 className="mt-3 text-lg font-semibold">United Kingdom: council tax band</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
               UK bands
-              <InfoTip label="Council tax band">A letter (A–H) that decides your council tax. It was set from a quick 1991 valuation — and many are wrong.</InfoTip>{" "}
-              still rely on a rushed 1991 valuation. We check if you&apos;re in too high a band — and owed a refund.
+              <InfoTip label="Council tax band">A letter (A to H) that decides your council tax. It was set from a quick 1991 valuation, and many are wrong.</InfoTip>{" "}
+              still rely on a rushed 1991 valuation. We check if you&apos;re in too high a band, and owed a refund.
             </p>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default async function Landing() {
           <Kicker>Is this legit?</Kicker>
           <h2 className="text-3xl font-bold tracking-tight">Built on real public data.</h2>
           <p className="mx-auto mt-4 max-w-xl leading-relaxed text-muted">
-            Not guesses — <strong className="text-foreground">6 million+</strong> UK property sales and{" "}
+            Not guesses. <strong className="text-foreground">6 million+</strong> UK property sales and{" "}
             <strong className="text-foreground">1.6 million</strong> Chicago parcels, straight from government records.
             It&apos;s an estimate, not tax advice, and we show exactly how every number is worked out.
           </p>
@@ -214,7 +214,7 @@ export default async function Landing() {
           <Faq q="Do I need to create an account?" a="No. Just type your address and get your answer." />
           <Faq q="Is my data safe?" a="We only use your address to look up public property records. We don't sell your data or do anything else with it." />
           <Faq q="How accurate is it?" a="It's an estimate based on recent sales of similar homes nearby. We show our working, the comparable sales we used, and a confidence level so you can judge it yourself." />
-          <Faq q="What do I do with the result?" a="If you're overpaying, we hand you a pre-filled appeal and the official filing link. Sending it is your choice — many appeals succeed and get money back." />
+          <Faq q="What do I do with the result?" a="If you're overpaying, we hand you a pre-filled appeal and the official filing link. Sending it is your choice, and many appeals succeed and get money back." />
         </div>
       </section>
 
@@ -223,12 +223,12 @@ export default async function Landing() {
         <div className="mx-auto max-w-3xl px-4 py-20 text-center">
           <h2 className="text-3xl font-bold tracking-tight">Check your home in 10 seconds.</h2>
           <p className="mx-auto mt-3 max-w-md text-muted">Free, no sign-up. You might be owed thousands.</p>
-          <Link href="/app" className="mt-6 inline-block rounded-full bg-accent px-8 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg">Check my home — free →</Link>
+          <Link href="/app" className="mt-6 inline-block rounded-full bg-accent px-8 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg">Check my home, free</Link>
         </div>
       </section>
 
       <footer className="border-t border-border py-8 text-center text-xs text-muted">
-        <p>An estimate from public records — not tax or legal advice. Not affiliated with any government body.</p>
+        <p>An estimate from public records. Not tax or legal advice. Not affiliated with any government body.</p>
         <p className="mt-1">Built with ClickHouse + Trigger.dev · <Link href="/methodology" className="underline underline-offset-2 hover:text-foreground">Methodology</Link></p>
       </footer>
     </div>

@@ -59,7 +59,7 @@ export default function StreetMapView({ spec }: { spec: StreetMap }) {
             .setPopup(
               new maplibregl.Popup({ offset: 14, closeButton: false }).setHTML(
                 `<div style="font:12px system-ui"><b>${p.address}</b><br/>ratio ${
-                  p.ratio != null ? p.ratio.toFixed(2) : "—"
+                  p.ratio != null ? p.ratio.toFixed(2) : "n/a"
                 }${p.isSubject ? " · your home" : ""}</div>`,
               ),
             )
