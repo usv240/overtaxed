@@ -6,6 +6,12 @@ import {
   UK_HPI_1991_DIVISOR, UK_DEFAULT_HPI_DIVISOR,
   bandIndex, bandLetter, bandFor1991,
 } from "@/lib/assumptions";
+import {
+  assessmentRatio, fairValue, overAssessedPct, confidenceLevel,
+  extrapolateCountyImpact,
+  annualOverpay as annualOverpayFn,
+  appealStrength as appealStrengthFn,
+} from "@/lib/analytics";
 import type {
   VerdictCard,
   StreetMap,
@@ -136,14 +142,13 @@ export async function analyzeProperty(pin: string): Promise<{
   if (!baseMarket) return { found: false, elapsedMs }; // no sale AND no comps (extremely rare)
 
   const rate = US_EFFECTIVE_TAX_RATE[r.region] ?? US_DEFAULT_EFFECTIVE_RATE;
-  const fairAssessed = baseMarket * medianRatio;
+  const fairAssessed = fairValue(baseMarket, medianRatio);
   const excessAssessed = Math.max(0, r.assessed - fairAssessed);
-  const annualOverpay = Math.round(excessAssessed * rate);
-  const ratio = r.assessed / baseMarket;
-  const overPct = ratio / medianRatio - 1;
-  const appealStrength =
-    overPct > 0.1 ? "strong" : overPct > 0.05 ? "moderate" : overPct > 0.02 ? "weak" : "none";
-  const confidence = !usedComps && compRows.length >= 4 ? "high" : compRows.length >= 3 ? "medium" : "low";
+  const annualOverpay = annualOverpayFn(r.assessed, fairAssessed, rate);
+  const ratio = assessmentRatio(r.assessed, baseMarket);
+  const overPct = overAssessedPct(ratio, medianRatio);
+  const appealStrength = appealStrengthFn(overPct);
+  const confidence = confidenceLevel(usedComps, compRows.length);
 
   const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
   const mkt = usedComps ? "comparable homes nearby" : "your recent sale";
@@ -286,14 +291,13 @@ export async function getRegressivity(
   if (i && i.sold > 0) {
     // Extrapolation = measured annual excess on the sold sample, scaled by how many
     // total parcels there are vs how many sold (representative-sample scale-up).
-    const scale = i.totalParcels / i.sold;
     spec.impact = {
       overAssessedPct: i.overPct,
       avgOverpayBelow: i.avgOverpayBelow,
       excessTaxBelowMeasured: i.excessBelow,
       soldSample: i.sold,
       totalParcels: i.totalParcels,
-      estCountyAnnual: Math.round(i.excessBelow * scale),
+      estCountyAnnual: extrapolateCountyImpact(i.excessBelow, i.totalParcels, i.sold),
     };
   }
 

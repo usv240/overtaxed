@@ -2,6 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parseVoaBands } from "@/lib/voa";
 import { bandFor1991, UK_BAND_FACTOR, bandIndex } from "@/lib/assumptions";
+import {
+  assessmentRatio, fairValue, annualOverpay, overAssessedPct,
+  appealStrength, confidenceLevel, extrapolateCountyImpact,
+} from "@/lib/analytics";
 
 test("bandFor1991 maps 1991 values to the correct statutory band", () => {
   assert.equal(bandFor1991(30000), "A");
@@ -45,4 +49,48 @@ test("parseVoaBands extracts address/band/council and skips non-band rows", () =
     band: "E",
     council: "Wandsworth",
   });
+});
+
+// ── Assessment math (lib/analytics.ts) ────────────────────────────────────
+test("assessmentRatio = assessed / market, guards divide-by-zero", () => {
+  assert.equal(assessmentRatio(400090, 305000).toFixed(2), "1.31");
+  assert.equal(assessmentRatio(100, 0), 0);
+});
+
+test("fairValue = market * local median ratio", () => {
+  assert.ok(Math.abs(fairValue(305000, 0.81) - 247050) < 1e-6);
+});
+
+test("annualOverpay = (assessed - fair) * rate, floored at 0", () => {
+  // Monticello demo: (400090 - 248362) * 2.5% ≈ 3793
+  assert.equal(annualOverpay(400090, 248362, 0.025), 3793);
+  // never negative when the home is under-assessed
+  assert.equal(annualOverpay(200000, 260000, 0.025), 0);
+});
+
+test("overAssessedPct measures distance above the neighbourhood median", () => {
+  // ratio 1.31 vs median 0.81 → ~62% over
+  assert.equal(Math.round(overAssessedPct(1.31, 0.81) * 100), 62);
+  assert.equal(overAssessedPct(1.0, 0), 0);
+});
+
+test("appealStrength buckets by how far over the median", () => {
+  assert.equal(appealStrength(0.62), "strong");
+  assert.equal(appealStrength(0.08), "moderate");
+  assert.equal(appealStrength(0.03), "weak");
+  assert.equal(appealStrength(0.0), "none");
+  assert.equal(appealStrength(-0.2), "none");
+});
+
+test("confidenceLevel is highest with own-sale + many comps", () => {
+  assert.equal(confidenceLevel(false, 5), "high");   // own sale + 4+ comps
+  assert.equal(confidenceLevel(true, 5), "medium");  // comps-only, still plenty
+  assert.equal(confidenceLevel(true, 3), "medium");
+  assert.equal(confidenceLevel(true, 1), "low");
+});
+
+test("extrapolateCountyImpact scales measured harm by parcels/sold", () => {
+  // $1M measured on 10k sold, scaled to 100k parcels → $10M
+  assert.equal(extrapolateCountyImpact(1_000_000, 100_000, 10_000), 10_000_000);
+  assert.equal(extrapolateCountyImpact(1_000_000, 100_000, 0), 0);
 });
