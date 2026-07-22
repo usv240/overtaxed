@@ -33,6 +33,40 @@ function extractVisuals(parts: any[]): { spec: VizSpec; ms?: number; rows?: numb
   return out;
 }
 
+/** Contextual next-question chips, chosen from what the last answer showed. */
+const FOLLOWUP = {
+  fair: { label: "Is Cook County fair?", q: "Is Cook County assessed fairly?" },
+  map: { label: "The Tax Divide map", q: "Show me the Tax Divide map for Cook County" },
+  worst: { label: "Most unfair areas", q: "Which Cook County neighbourhoods are the most unfairly assessed?" },
+  usHome: { label: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
+  ukBand: { label: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
+} as const;
+
+function suggestFollowups(parts: any[]): { label: string; q: string }[] {
+  const kinds = new Set<string>();
+  let currency: string | undefined;
+  for (const p of parts ?? []) {
+    const output = p?.output ?? p?.result ?? p?.toolInvocation?.result;
+    if (output && Array.isArray(output.visuals)) {
+      for (const v of output.visuals) {
+        if (v?.kind) kinds.add(v.kind);
+        if (v?.kind === "verdictCard" && v?.currency) currency = v.currency;
+      }
+    }
+  }
+  if (!kinds.size) return [];
+  if (kinds.has("regressivityScatter")) return [FOLLOWUP.worst, FOLLOWUP.map, FOLLOWUP.usHome];
+  if (kinds.has("regressivityMap")) return [FOLLOWUP.worst, FOLLOWUP.fair, FOLLOWUP.usHome];
+  if (kinds.has("fairnessLeaderboard")) return [FOLLOWUP.map, FOLLOWUP.fair, FOLLOWUP.usHome];
+  if (kinds.has("verdictCard") || kinds.has("streetMap") || kinds.has("appealPacket") || kinds.has("appealDebate")) {
+    // UK verdicts carry GBP; US carry USD.
+    return currency === "GBP"
+      ? [FOLLOWUP.usHome, FOLLOWUP.fair, FOLLOWUP.map]
+      : [FOLLOWUP.fair, FOLLOWUP.map, FOLLOWUP.ukBand];
+  }
+  return [];
+}
+
 /** True while the debate sub-task has been called but hasn't returned yet. */
 function debatePending(parts: any[]): boolean {
   for (const p of parts ?? []) {
@@ -206,6 +240,27 @@ export function Chat({ stats }: { stats: Stats }) {
                   <Dots /> analysing…
                 </div>
               )}
+              {!streaming && (() => {
+                const last = [...messages].reverse().find((m) => m.role === "assistant");
+                if (!last || debatePending((last as any).parts)) return null;
+                const sugg = suggestFollowups((last as any).parts);
+                if (!sugg.length) return null;
+                return (
+                  <div className="animate-fade-up flex flex-wrap items-center gap-2 pt-1">
+                    <span className="text-xs font-medium text-muted">Ask next</span>
+                    {sugg.map((s) => (
+                      <button
+                        key={s.q}
+                        onClick={() => send(s.q)}
+                        className="group inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
+                      >
+                        {s.label}
+                        <Icon name="arrowRight" size={12} className="text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />
+                      </button>
+                    ))}
+                  </div>
+                );
+              })()}
               </div>
             </div>
           )}
