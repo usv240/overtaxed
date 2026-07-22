@@ -22,6 +22,8 @@ Ask if you're overtaxed on your home; get a map, a fairness chart and a ready-to
 
 **Honest by design.** Every figure is computed from public records (not tax advice); jargon has plain-English tooltips and an opt-in "show the maths"; the extrapolation method and all reference figures are documented at `/methodology`.
 
+**The scale.** We *measure* ~$460M/yr of regressive over-assessment in Cook County; scaled by owner-occupied homes — and consistent with national research (Avenancio-León & Howard, *The Assessment Gap*, QJE 2022, ~118M homes) — that points to **~$20 billion a year** over-shifted onto lower-value US homes. Cook County is one instance of a national, systemic problem, and the same pipeline already generalises (Allegheny + UK added with no code changes).
+
 It's free, it takes 10 seconds, and it hands a real person real money back — in two countries, on real data.
 
 ## How ClickHouse & Trigger.dev are each used (brief)

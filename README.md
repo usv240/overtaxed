@@ -14,6 +14,8 @@ Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026** — th
 
 30–60% of US homes are over-assessed and 400,000+ UK homes sit in the wrong council-tax band (still on 1991 "drive-by" valuations) — yet **fewer than 1 in 20 people ever challenge it**, and successful appeals save **$1,000–3,000 / £thousands a year**. The prices are public; nobody could *query* them. Overtaxed makes your street answerable in milliseconds.
 
+**The scale of it.** We *measure* ~**$460M/yr** of regressive over-assessment in Cook County alone, live over real parcels. Scaled by owner-occupied homes — and consistent with national studies finding the same bias across most US jurisdictions (Avenancio-León & Howard, *The Assessment Gap*, QJE 2022, ~118M homes) — that points to **~$20 billion a year** over-shifted onto lower-value US homes. Cook County is one instance of a national, systemic problem the pipeline already generalises to (see `/methodology` for the transparent maths).
+
 ## What you can do (every answer is a visual, not a paragraph)
 
 - **Check a home** → a verdict card ("you're overpaying ~$X/yr"), a **map of your street** coloured by over-assessment, and comparable sales.
