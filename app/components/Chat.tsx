@@ -135,15 +135,19 @@ export function Chat({ stats }: { stats: Stats }) {
         <main className="flex flex-1 flex-col overflow-hidden">
       <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto">
           {empty ? (
-            <div className="hero-glow mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center rounded-3xl px-4 py-8 text-center">
-              <div className="mb-2.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-muted shadow-sm">
-                <span className="h-1.5 w-1.5 rounded-full bg-pos" /> Property tax, made visual
+            <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center px-4 py-10 text-center">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-[#7c6cf7] text-accent-fg shadow-lg shadow-accent/25 ring-1 ring-white/15">
+                <Icon name="home" size={26} />
               </div>
-              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent shadow-md ring-1 ring-accent/10">
-                <Icon name="home" size={30} />
+              <div className="mb-3.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-muted shadow-sm">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pos/60" />
+                  <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-pos" />
+                </span>
+                Property tax, made visual
               </div>
-              <h1 className="text-[28px] font-bold leading-[1.1] tracking-tight sm:text-4xl">What home should we check?</h1>
-              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
+              <h1 className="text-[30px] font-bold leading-[1.08] tracking-[-0.02em] sm:text-[42px]">What home should we check?</h1>
+              <p className="mx-auto mt-3.5 max-w-md text-[15px] leading-relaxed text-muted">
                 Type any address and get a picture back: a verdict, a map of your street, and a ready-to-file appeal. Not a wall of text.
               </p>
               <div className="mt-8 grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
