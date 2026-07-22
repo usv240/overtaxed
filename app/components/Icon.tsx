@@ -13,6 +13,7 @@ const PATHS: Record<string, React.ReactNode> = {
   building: <><rect x="4" y="3" width="16" height="18" rx="1" /><path d="M9 7h.01M15 7h.01M9 11h.01M15 11h.01M9 15h.01M15 15h.01" /></>,
   check: <path d="M20 6 9 17l-5-5" />,
   shield: <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />,
+  grid: <><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></>,
 };
 
 export function Icon({ name, size = 20, ...props }: { name: keyof typeof PATHS; size?: number } & SVGProps<SVGSVGElement>) {

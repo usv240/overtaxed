@@ -2,7 +2,7 @@ import { query, ch } from "@/lib/clickhouse";
 import { fetchVoaBands, postcodeCentroid } from "@/lib/voa";
 import {
   US_EFFECTIVE_TAX_RATE, US_DEFAULT_EFFECTIVE_RATE,
-  UK_BAND_FACTOR, UK_BAND_D_ANNUAL, UK_DEFAULT_BAND_D_ANNUAL,
+  UK_BAND_FACTOR, UK_DEFAULT_BAND_D_ANNUAL,
   UK_HPI_1991_DIVISOR, UK_DEFAULT_HPI_DIVISOR,
   bandIndex, bandLetter, bandFor1991,
 } from "@/lib/assumptions";
@@ -14,6 +14,7 @@ import type {
   CompsTable,
   AppealPacket,
   FairnessLeaderboard,
+  RegressivityMap,
 } from "@/lib/viz-catalog";
 
 /**
@@ -332,6 +333,35 @@ async function ensureUkBandsCached(postcode: string): Promise<number> {
   return rows.length;
 }
 
+/** THE TAX DIVIDE: a live over-assessment heatmap — grid every sold parcel's
+ *  assessment ratio into ~1km cells, computed in ClickHouse from real coordinates. */
+export async function getRegressivityMap(region: string): Promise<{ spec: RegressivityMap; elapsedMs: number; rowsRead: number }> {
+  const { rows: cells, elapsedMs } = await query<{ lat: number; lng: number; n: number; ratio: number }>(
+    `WITH base AS (
+       SELECT p.lat AS lat, p.lng AS lng, a.assessed_value / ls.sp AS ratio
+       FROM overtaxed.parcels p
+       INNER JOIN overtaxed.assessments a ON a.pin = p.pin
+       INNER JOIN (SELECT pin, argMaxMerge(sp) AS sp FROM overtaxed.latest_sales GROUP BY pin) ls ON ls.pin = p.pin
+       WHERE a.region = {region:String} AND p.lat != 0 AND ls.sp > 20000
+         AND a.assessed_value / ls.sp BETWEEN 0.2 AND 3.0
+     )
+     SELECT round(lat, 2) AS lat, round(lng, 2) AS lng, count() AS n, round(avg(ratio), 3) AS ratio
+     FROM base GROUP BY lat, lng HAVING n >= 8 ORDER BY n DESC LIMIT 3000`,
+    { region },
+  );
+  const center = cells.length
+    ? { lat: cells.reduce((s, c) => s + c.lat, 0) / cells.length, lng: cells.reduce((s, c) => s + c.lng, 0) / cells.length }
+    : { lat: 41.83, lng: -87.68 };
+  const spec: RegressivityMap = {
+    kind: "regressivityMap",
+    region,
+    center,
+    cells,
+    caption: `Every ~1 km cell coloured by how its homes are assessed vs what they sold for — red = assessed above sale price. ${cells.length.toLocaleString()} cells over ${cells.reduce((s, c) => s + c.n, 0).toLocaleString()} sold homes.`,
+  };
+  return { spec, elapsedMs, rowsRead: cells.length };
+}
+
 /** Rank areas (Cook County townships) by how regressively they assess homes. */
 export async function getFairnessLeaderboard(region: string): Promise<{ spec: FairnessLeaderboard; elapsedMs: number; rowsRead: number }> {
   const { rows, elapsedMs } = await query<{ name: string; prd: number; n: number }>(
@@ -396,7 +426,12 @@ export async function checkUkBand(addressQuery: string): Promise<{
   }
   if (!subj.length) return { found: false, elapsedMs };
   const s = subj[0];
-  const bandDAnnual = UK_BAND_D_ANNUAL[s.council] ?? UK_DEFAULT_BAND_D_ANNUAL;
+  // real Band D amount for this council, loaded live from gov.uk (ClickHouse)
+  const bandDRows = (await query<{ band_d: number }>(
+    `SELECT band_d FROM overtaxed.uk_band_d WHERE council = {c:String} ORDER BY year DESC LIMIT 1`,
+    { c: s.council },
+  )).rows;
+  const bandDAnnual = bandDRows[0]?.band_d ?? UK_DEFAULT_BAND_D_ANNUAL;
 
   // neighbours: same postcode (or within 300m), excluding subject
   const { rows: neigh } = await query<{ address: string; band: string; lat: number; lng: number }>(

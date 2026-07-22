@@ -4,6 +4,7 @@ export type Stats = {
   ukSales: number;
   cookParcels: number;
   allegheny: number;
+  impactAnnual: number;
 };
 
 const compact = (n: number) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
@@ -23,7 +24,7 @@ export function ContextPanel({ stats }: { stats: Stats }) {
             { n: compact(stats.ukSales), l: "UK sales (Land Registry)" },
             { n: compact(stats.cookParcels), l: "Cook County parcels" },
             { n: compact(stats.allegheny), l: "Allegheny assessments" },
-            { n: "~$460M", l: "Est. yearly harm, Cook Co." },
+            { n: compact(stats.impactAnnual), l: "Est. yearly harm, Cook Co." },
           ].map((s) => (
             <div key={s.l} className="rounded-xl border border-border bg-surface p-3">
               <div className="text-lg font-bold tracking-tight text-accent">{s.n}</div>

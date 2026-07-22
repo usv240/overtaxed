@@ -10,7 +10,8 @@ async function counts() {
     UNION ALL SELECT 'Cook County assessments', toString(count()) FROM overtaxed.assessments WHERE region='Cook County'
     UNION ALL SELECT 'Cook County parcels (geo+address)', toString(count()) FROM overtaxed.parcels
     UNION ALL SELECT 'Allegheny County assessments', toString(count()) FROM overtaxed.assessments WHERE region='Allegheny County'
-    UNION ALL SELECT 'Allegheny County sales (arms-length)', toString(count()) FROM overtaxed.sales WHERE region='Allegheny County'`);
+    UNION ALL SELECT 'Allegheny County sales (arms-length)', toString(count()) FROM overtaxed.sales WHERE region='Allegheny County'
+    UNION ALL SELECT 'UK Band D amounts (gov.uk, live)', toString(count()) FROM overtaxed.uk_band_d`);
   return rows;
 }
 
@@ -52,7 +53,7 @@ export default async function MethodologyPage() {
         <li>• <strong>Comparable sales</strong> — nearest arms-length sales by <code>geoDistance()</code>.</li>
         <li>• <strong>Over-assessment</strong> — your assessment ratio vs the local (≤2km) neighbourhood median.</li>
         <li>• <strong>Regressivity</strong> — <strong>PRD</strong> (Price-Related Differential) and <strong>COD</strong> (Coefficient of Dispersion), the standard IAAO uniformity metrics, over every sold parcel in the county.</li>
-        <li>• <strong>UK band check</strong> — <strong>real bands fetched live from the VOA</strong> band-check service for your postcode (cached in ClickHouse), then a neighbour-band comparison + back-cast of local sale prices to their 1991 value.</li>
+        <li>• <strong>UK band check</strong> — <strong>real bands fetched live from the VOA</strong> band-check service for your postcode (cached in ClickHouse), then a neighbour-band comparison + back-cast of local sale prices to their 1991 value. The £ overpayment uses your council&apos;s <strong>real Band D charge</strong> (gov.uk, loaded live).</li>
       </ul>
 
       <h2 className="mb-1 mt-6 font-semibold">Reference inputs (statutory / published — with sources)</h2>
@@ -62,7 +63,6 @@ export default async function MethodologyPage() {
         <Row k="Cook County assessment level" v="10% of market · 35 ILCS 200" />
         <Row k="UK band ratios (A–H vs D)" v="statutory · LGFA 1992 s.5" />
         <Row k="UK 1991 band value ranges" v="statutory · SI 1992/550" />
-        <Row k="UK Band D charge (by council)" v="gov.uk council-tax levels" />
         <Row k="UK 1991 back-cast divisor" v="Nationwide / HM Land Registry HPI" />
       </div>
 

@@ -131,6 +131,15 @@ export const AppealPacket = z.object({
   estimatedAnnualSaving: z.number().optional(),
 });
 
+/** 9 — THE TAX DIVIDE: a live heatmap of over-assessment across a county. */
+export const RegressivityMap = z.object({
+  kind: z.literal("regressivityMap"),
+  region: z.string(),
+  center: z.object({ lat: z.number(), lng: z.number() }),
+  cells: z.array(z.object({ lat: z.number(), lng: z.number(), n: z.number(), ratio: z.number() })),
+  caption: z.string().optional(),
+});
+
 /** 8 — a leaderboard ranking areas by how regressively they assess homes. */
 export const FairnessLeaderboard = z.object({
   kind: z.literal("fairnessLeaderboard"),
@@ -158,6 +167,7 @@ export const VizSpec = z.discriminatedUnion("kind", [
   AppealPacket,
   AppealDebate,
   FairnessLeaderboard,
+  RegressivityMap,
 ]);
 
 export type VizSpec = z.infer<typeof VizSpec>;
@@ -169,6 +179,7 @@ export type CompsTable = z.infer<typeof CompsTable>;
 export type AppealPacket = z.infer<typeof AppealPacket>;
 export type AppealDebate = z.infer<typeof AppealDebate>;
 export type FairnessLeaderboard = z.infer<typeof FairnessLeaderboard>;
+export type RegressivityMap = z.infer<typeof RegressivityMap>;
 
 /** Human-readable catalog reference injected into the system prompt. */
 export const VIZ_CATALOG_REFERENCE = `

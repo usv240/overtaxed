@@ -25,7 +25,7 @@ Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026** — th
 ## Data actually loaded (all real, all live)
 
 - **US — two counties:** **Cook County** (Chicago) — ~1.59M residential **parcels** (geo + address), ~1.59M **assessments**, ~69k arms-length **sales**; and **Allegheny County** (Pittsburgh, [WPRDC](https://data.wprdc.org/dataset/property-assessments)) — ~456k assessments + ~52k sales. Two counties proves the pipeline generalises.
-- **UK — [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads):** **6.06M** real sales (2019–2024, Open Government Licence). Council-tax **bands are fetched live from the VOA** band-check service per postcode (no bulk dataset exists) and cached in ClickHouse.
+- **UK — [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads):** **6.06M** real sales (2019–2024, Open Government Licence). Council-tax **bands are fetched live from the VOA** band-check service per postcode (no bulk dataset exists) and cached in ClickHouse; the **Band D charge** per council comes from gov.uk (135 authorities, live).
 - Reference inputs (tax rates, statutory band ratios, 1991 baselines) are consolidated + sourced in [`lib/assumptions.ts`](lib/assumptions.ts) and shown at **/methodology**.
 
 ## Architecture

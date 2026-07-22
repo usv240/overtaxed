@@ -13,8 +13,8 @@ import type { VizSpec } from "@/lib/viz-catalog";
 
 const EXAMPLES = [
   { icon: "home", title: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
+  { icon: "grid", title: "The Tax Divide map", q: "Show me the Tax Divide map for Cook County" },
   { icon: "chart", title: "Is Cook County fair?", q: "Is Cook County assessed fairly?" },
-  { icon: "chart", title: "Most unfair areas?", q: "Which Cook County neighbourhoods are the most unfairly assessed?" },
   { icon: "pin", title: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
 ] as const;
 

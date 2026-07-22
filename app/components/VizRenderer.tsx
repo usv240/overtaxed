@@ -15,6 +15,10 @@ const StreetMapView = dynamic(() => import("./StreetMapView"), {
   ssr: false,
   loading: () => <div className="h-72 w-full animate-pulse rounded-xl bg-surface-2" />,
 });
+const HeatmapView = dynamic(() => import("./HeatmapView"), {
+  ssr: false,
+  loading: () => <div className="h-96 w-full animate-pulse rounded-xl bg-surface-2" />,
+});
 
 /** Colour a parcel by how over/under-assessed it is (ratio vs 1.0). */
 function ratioColor(ratio: number | null): string {
@@ -199,6 +203,24 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
             <FileAppealButton spec={spec} />
             {spec.filingUrl && <a href={spec.filingUrl} target="_blank" rel="noreferrer" className="text-sm text-accent underline">official filing site →</a>}
           </div>
+        </Card>
+      );
+
+    case "regressivityMap":
+      return (
+        <Card>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <h4 className="font-semibold">The Tax Divide — {spec.region}, live</h4>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted">
+              <span>under</span>
+              <span className="h-2.5 w-24 rounded" style={{ background: "linear-gradient(90deg,#1e40af,#93c5fd,#fde68a,#f97316,#b91c1c)" }} />
+              <span>over-assessed</span>
+            </div>
+          </div>
+          <HeatmapView spec={spec} />
+          {spec.caption && <p className="mt-1 text-xs text-muted">{spec.caption}</p>}
+          <Simple>In plain terms: the red pockets are where the tax office values homes <em>above</em> what they actually sell for. Zoom in and click any area — this is computed live over every sold parcel, in ClickHouse.</Simple>
+          <Badge ms={ms} rows={rows} />
         </Card>
       );
 

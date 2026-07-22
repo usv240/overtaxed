@@ -80,3 +80,13 @@ CREATE TABLE IF NOT EXISTS overtaxed.band_thresholds
 )
 ENGINE = MergeTree
 ORDER BY band;
+
+-- uk_band_d — real Band D council-tax amount per billing authority (gov.uk Table 7)
+CREATE TABLE IF NOT EXISTS overtaxed.uk_band_d
+(
+    council  String,
+    band_d   Float64,
+    year     String DEFAULT '2024-25'
+)
+ENGINE = ReplacingMergeTree
+ORDER BY council;

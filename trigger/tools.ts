@@ -8,6 +8,7 @@ import {
   generateAppealPacket,
   checkUkBand,
   getFairnessLeaderboard,
+  getRegressivityMap,
 } from "@/lib/queries";
 import { appealDebate } from "./debate";
 import type { VizSpec } from "@/lib/viz-catalog";
@@ -135,11 +136,22 @@ export const fairnessLeaderboardTool = tool({
   },
 });
 
+export const regressivityMapTool = tool({
+  description:
+    "Show 'The Tax Divide': an explorable heatmap of over-assessment across a US county — every ~1km area coloured by how homes are assessed vs what they sell for. Use for 'show me a map', 'where is it worst geographically', 'map the unfairness'. Cook County.",
+  inputSchema: z.object({ region: z.enum(["Cook County"]).describe("US county") }),
+  execute: async ({ region }) => {
+    const { spec, elapsedMs, rowsRead } = await getRegressivityMap(region);
+    return { visuals: [spec], elapsedMs, rowsRead };
+  },
+});
+
 export const overtaxedTools = {
   findProperty: findPropertyTool,
   checkUkBand: checkUkBandTool,
   debateAppeal: debateAppealTool,
   fairnessLeaderboard: fairnessLeaderboardTool,
+  regressivityMap: regressivityMapTool,
   analyzeProperty: analyzePropertyTool,
   streetMap: streetMapTool,
   regressivity: regressivityTool,

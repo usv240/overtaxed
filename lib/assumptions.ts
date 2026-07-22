@@ -37,13 +37,10 @@ export const UK_BAND_1991: [string, number, number][] = [
   ["E", 88001, 120000], ["F", 120001, 160000], ["G", 160001, 320000], ["H", 320001, 1e12],
 ];
 
-// Representative Band D annual charge (£). Varies by council; SW11 = Wandsworth,
-// one of England's lowest. Overpayment scales with this, so we use a real figure.
-// Source: gov.uk "Council Tax levels set by local authorities in England".
-export const UK_BAND_D_ANNUAL: Record<string, number> = {
-  "Wandsworth": 990,
-};
-export const UK_DEFAULT_BAND_D_ANNUAL = 1800; // England average
+// Per-council Band D amounts are loaded LIVE into ClickHouse (overtaxed.uk_band_d)
+// from gov.uk Table 7a. This is only the fallback: the England average Band D.
+// Source: gov.uk "Council Tax levels set by local authorities in England 2024-25".
+export const UK_DEFAULT_BAND_D_ANNUAL = 2171;
 
 // Sale → 1991 back-cast divisor (nominal house-price growth 1991→present) by region.
 // Source: Nationwide / HM Land Registry UK House Price Index.
