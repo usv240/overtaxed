@@ -6,6 +6,7 @@ import {
   assessmentRatio, fairValue, annualOverpay, overAssessedPct,
   appealStrength, confidenceLevel, extrapolateCountyImpact,
 } from "@/lib/analytics";
+import { projectUsAnnual, projectUkAnnual } from "@/lib/impact";
 
 test("bandFor1991 maps 1991 values to the correct statutory band", () => {
   assert.equal(bandFor1991(30000), "A");
@@ -93,4 +94,15 @@ test("extrapolateCountyImpact scales measured harm by parcels/sold", () => {
   // $1M measured on 10k sold, scaled to 100k parcels → $10M
   assert.equal(extrapolateCountyImpact(1_000_000, 100_000, 10_000), 10_000_000);
   assert.equal(extrapolateCountyImpact(1_000_000, 100_000, 0), 0);
+});
+
+// ── National impact projection (lib/impact.ts) ────────────────────────────
+test("projectUsAnnual scales Cook figure by owner-occupied homes (tens of billions)", () => {
+  const us = projectUsAnnual(460_000_000);
+  assert.ok(us > 15_000_000_000 && us < 30_000_000_000, `expected ~$20B, got ${us}`);
+  assert.equal(projectUsAnnual(0), 0);
+});
+
+test("projectUkAnnual = misbanded homes × one-band error", () => {
+  assert.equal(projectUkAnnual(), 80_000_000);
 });

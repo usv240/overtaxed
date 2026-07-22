@@ -1,6 +1,7 @@
 import { Chat } from "@/app/components/Chat";
 import { query } from "@/lib/clickhouse";
 import { getRegressivity } from "@/lib/queries";
+import { projectUsAnnual } from "@/lib/impact";
 
 export const revalidate = 600;
 
@@ -20,9 +21,10 @@ async function getStats() {
       cookParcels: Number(r?.cookParcels ?? 0),
       allegheny: Number(r?.allegheny ?? 0),
       impactAnnual,
+      nationalAnnual: projectUsAnnual(impactAnnual),
     };
   } catch {
-    return fallback;
+    return { ...fallback, nationalAnnual: projectUsAnnual(fallback.impactAnnual) };
   }
 }
 

@@ -5,9 +5,11 @@ export type Stats = {
   cookParcels: number;
   allegheny: number;
   impactAnnual: number;
+  nationalAnnual: number;
 };
 
 const compact = (n: number) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+const usd = (n: number) => "$" + compact(n);
 
 function Label({ children }: { children: React.ReactNode }) {
   return <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-muted">{children}</div>;
@@ -24,7 +26,7 @@ export function ContextPanel({ stats }: { stats: Stats }) {
             { n: compact(stats.ukSales), l: "UK sales (Land Registry)" },
             { n: compact(stats.cookParcels), l: "Cook County parcels" },
             { n: compact(stats.allegheny), l: "Allegheny assessments" },
-            { n: compact(stats.impactAnnual), l: "Est. yearly harm, Cook Co." },
+            { n: usd(stats.impactAnnual), l: "Est. yearly harm, Cook Co." },
           ].map((s) => (
             <div key={s.l} className="rounded-xl border border-border bg-surface p-3">
               <div className="text-lg font-bold tracking-tight text-accent">{s.n}</div>
@@ -32,6 +34,12 @@ export function ContextPanel({ stats }: { stats: Stats }) {
             </div>
           ))}
         </div>
+        <a href="/methodology" className="mt-2 block rounded-xl border border-accent/30 bg-accent-soft p-3">
+          <div className="text-lg font-bold tracking-tight text-accent">~{usd(stats.nationalAnnual)}/yr</div>
+          <div className="mt-0.5 text-xs leading-snug text-muted">
+            projected US-wide if Cook&apos;s measured bias holds nationally — the same regressivity national studies document. <span className="underline">See the maths →</span>
+          </div>
+        </a>
       </div>
 
       <div>

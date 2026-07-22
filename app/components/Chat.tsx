@@ -11,6 +11,8 @@ import { Icon } from "./Icon";
 import { ContextPanel, type Stats } from "./ContextPanel";
 import type { VizSpec } from "@/lib/viz-catalog";
 
+const compactN = (n: number) => Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+
 const EXAMPLES = [
   { icon: "home", title: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
   { icon: "grid", title: "The Tax Divide map", q: "Show me the Tax Divide map for Cook County" },
@@ -158,8 +160,20 @@ export function Chat({ stats }: { stats: Stats }) {
                 ))}
               </div>
 
+              {/* The bigger picture — national potential, projected from the live Cook figure */}
+              <div className="mt-12 w-full max-w-2xl rounded-2xl border border-accent/25 bg-accent-soft px-5 py-5 text-center">
+                <div className="text-3xl font-bold tracking-tight text-accent sm:text-4xl">
+                  ~${compactN(stats.nationalAnnual)}/yr
+                </div>
+                <p className="mx-auto mt-1.5 max-w-lg text-sm text-muted">
+                  over-shifted onto lower-value US homes by biased assessments — a transparent projection from the
+                  <strong className="text-foreground"> ${compactN(stats.impactAnnual)}</strong> we measure live in Cook County alone.{" "}
+                  <a href="/methodology" className="text-accent underline">See the maths →</a>
+                </p>
+              </div>
+
               {/* Why it's worth checking — plain-English impact / savings */}
-              <div className="mt-14 w-full max-w-2xl border-t border-border pt-8">
+              <div className="mt-10 w-full max-w-2xl border-t border-border pt-8">
                 <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-muted">Why it&apos;s worth 10 seconds</p>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {[
