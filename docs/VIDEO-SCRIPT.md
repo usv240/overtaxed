@@ -19,19 +19,19 @@
 
 ## 2 · The verdict + visual proof (0:12–0:48)
 **Screen:** Verdict card streams in: **"You're overpaying ~$3,793/yr,"** plain-English explanation → scroll to the **street map** (subject red) and **comparable sales**. **Hover the `⚡ ClickHouse` latency badge.**
-**VO:** "In one line: this assessment looks about $3,800 a year too high. Red marks homes assessed high relative to the sales evidence around them. That map and those comparables were computed live in ClickHouse, in a few hundred milliseconds."
+**VO:** "In one line: this homeowner appears to be paying about $3,800 a year more than the sales evidence supports. Red marks homes assessed high relative to nearby sales. That map and those comparables were queried live from ClickHouse, in a few hundred milliseconds."
 
 ## 3 · Trigger.dev: the durable workflow (0:48–1:20)
-**Screen:** Scroll to the **debate** card (For / Against / **FILE IT**). Then cut to the **Trigger dashboard Runs tab** — point at the parent `overtaxed` run **and** the child `appeal-debate` run, both green. Hold it **~7 seconds.**
-**VO:** "Should they actually appeal? The whole conversation is a Trigger.dev `chat.agent` run, and it launches this two-sided analysis as a durable child task — one side argues for, one against. Because it's durable, the long-running work and retries don't vanish when a browser request ends."
+**Screen:** Scroll to the **debate** card (For / Against / **FILE IT**). Then cut to the **Trigger dashboard Runs tab** — point at the parent `overtaxed` run **and** the child `appeal-debate` run, both green. Hold it **~7 seconds, and let a beat of silence sit** while the run tree is on screen.
+**VO:** "Should they actually appeal? The whole conversation is a Trigger.dev `chat.agent` run, and it launches this two-sided analysis as a durable child task — one side argues for, one against. Even if the browser closes, the workflow keeps running. And everything you're seeing here is replayable."
 
 ## 4 · Turn analysis into action (1:20–1:44)
 **Screen:** Click **"Download filled appeal (PDF)"**, open it for a beat. Then click **"Watch this home"** — it flips to *"Watching — a scheduled Trigger.dev task re-checks it."*
 **VO:** "Then it turns ten seconds of analysis into a pre-filled appeal — the property details, the grounds, and the comparable-sale evidence, ready for review. And one click puts the home on watch: a scheduled Trigger.dev task quietly re-checks it over time and flags it if it becomes more appeal-worthy. So it's not a one-time lookup — it's a durable workflow that keeps working."
 
 ## 5 · CLIMAX — ask the data anything (1:44–2:34)
-**Screen:** Back on the app. Type: `Which Chicago areas overpay the most for homes under $300k?` → the **chart + table** appear → **open "View the ClickHouse query"** and **let the SQL sit on screen ~3 seconds.** Point the cursor at `sale_price < 300000` and the `GROUP BY`.
-**VO:** "But this isn't a fixed dashboard. Ask a brand-new question, and the agent writes its own ClickHouse query — safe and read-only — runs it across the live data, and picks a visual answer. You can see it here: it filtered homes under three hundred thousand, grouped by area, and ranked the worst. The exact SQL and the run time stay visible, so every answer is auditable."
+**Screen:** Back on the app. Type: `Which Chicago areas overpay the most for homes under $300k?` → **let the chart + table land first (~2s, let it breathe)** → **THEN open "View the ClickHouse query"** and hold the SQL on screen **~3 seconds**, cursor on `sale_price < 300000` and the `GROUP BY`.
+**VO:** "But this isn't a fixed dashboard. Ask a brand-new question, and you just get the answer — a chart, ranked worst first. *(let it land)* And here's the part I love: the agent wrote that ClickHouse query itself, safe and read-only. The answer isn't generated first and drawn later — the visualization *is* the answer. And the exact query and its run time stay on screen, so every answer is auditable."
 
 ## 6 · Zoom out — The Tax Divide (2:30–2:58)
 **Screen:** Click **"The Tax Divide map"** preset → heatmap paints in → zoom into Chicago, click a red area.
@@ -43,7 +43,7 @@
 
 ## 8 · The impact (3:20–3:52)
 **Screen:** Open **/methodology**, scroll to the **"~$21B/yr"** panel (transparent maths + the QJE citation).
-**VO:** "How big is this? Within this data we measure about four hundred and sixty million dollars a year of excess assessment in Cook County alone. Scaled nationally — and consistent with published research across a hundred and eighteen million homes — it points to roughly twenty billion dollars a year, and we show that as a transparent projection, not a promise. It's quietly taken from the people who can least afford it."
+**VO:** "How big is this? In this data we measure about four hundred and sixty million dollars a year of excess assessment in Cook County alone. Using published national research across a hundred and eighteen million homes, we project that to roughly twenty billion a year — shown as a transparent projection, every assumption documented. It's quietly taken from the people who can least afford it."
 
 ## 9 · The architecture + bonus, fast (3:52–4:08)
 **Screen:** Flash the "Under the hood" sidebar; then the **/portfolio** page showing the **"Postgres (OLTP) joined to ClickHouse (OLAP) · one query"** badge.
@@ -51,7 +51,7 @@
 
 ## 10 · Close on the homeowner (4:08–4:25)
 **Screen:** A quick 2-second flash of the **UK band** result, then land on the clean verdict card (best product screen), URL + GitHub visible.
-**VO:** "The same pipeline already covers a second US county and live UK council-tax checks. The data was always public — the missing piece was making it understandable. Overtaxed turns millions of buried records into an answer any homeowner can actually use. That's Overtaxed."
+**VO:** "The same pipeline already covers a second US county and live UK council-tax checks. The data was always public — the missing piece was making it understandable. Overtaxed turns public records into evidence people can actually act on. That's Overtaxed."
 
 ---
 
