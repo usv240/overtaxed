@@ -1,103 +1,140 @@
 # Overtaxed
 
-**Type your home address. Instead of a paragraph, see a map of your street proving you're taxed too high, a one-line "you're overpaying $X/yr" verdict, and a pre-filled appeal — plus the map showing the poor are overtaxed to subsidise the rich.**
+**Type your home address and, instead of a paragraph, get a picture: a one-line verdict ("you're overpaying ~$X a year"), a map of your street proving it, and a ready-to-file appeal. You can also just ask the data anything and watch it answer live.**
 
-Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026** — theme *"Beyond the Wall of Text."*
+Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026**, theme *"Beyond the Wall of Text."*
 
-**▶ Live demo: https://overtaxed-ujwal-s-projects5.vercel.app · Repo: https://github.com/usv240/overtaxed**
+**▶ Live demo: https://overtaxed-ujwal-s-projects5.vercel.app**
+**Repo: https://github.com/usv240/overtaxed**
 
-> ⚠️ Estimates from public records. Not tax or legal advice.
+> Estimates from public records. Not tax or legal advice.
 
 ---
 
-## Why it exists
+## The problem, in plain words
 
-30–60% of US homes are over-assessed and 400,000+ UK homes sit in the wrong council-tax band (still on 1991 "drive-by" valuations) — yet **fewer than 1 in 20 people ever challenge it**, and successful appeals save **$1,000–3,000 / £thousands a year**. The prices are public; nobody could *query* them. Overtaxed makes your street answerable in milliseconds.
+Most people are overpaying property tax and never find out. In the US, 30 to 60% of homes are valued too high for tax. In the UK, 400,000+ homes sit in the wrong council-tax band (still based on a rushed 1991 valuation). Yet **fewer than 1 in 20 people ever challenge it**, even though winning saves **$1,000 to $3,000 (or £1,000s) a year**.
 
-**The scale of it.** We *measure* ~**$460M/yr** of regressive over-assessment in Cook County alone, live over real parcels. Scaled by owner-occupied homes — and consistent with national studies finding the same bias across most US jurisdictions (Avenancio-León & Howard, *The Assessment Gap*, QJE 2022, ~118M homes) — that points to **~$20 billion a year** over-shifted onto lower-value US homes. Cook County is one instance of a national, systemic problem the pipeline already generalises to (see `/methodology` for the transparent maths).
+The prices that prove it are public. The problem is nobody could ever *query* them. Overtaxed makes your street answerable in milliseconds.
 
-## What you can do (every answer is a visual, not a paragraph)
+**And it's not a small problem.** We *measure* about **$460M a year** of unfair over-assessment in Cook County alone, live, over real homes. Scaled to the country (and matching national research: Avenancio-León & Howard, *The Assessment Gap*, QJE 2022, which studied ~118M homes), that points to roughly **$20 billion a year** shifted onto lower-value homes. Cook County is just one example of a nationwide, systemic bias, and the same pipeline already runs a second US county and the UK with no code changes.
 
-- **Check a home** → a verdict card ("you're overpaying ~$X/yr"), a **map of your street** coloured by over-assessment, and comparable sales.
-- **The Tax Divide** → an **explorable live heatmap** of over-assessment across Cook County, aggregated from ~1.6M real parcels in ClickHouse (`round(lat,2)` spatial grid) — zoom/click any area.
-- **Is my county fair?** → a regressivity study (PRD/COD) with an **interactive price slider** that re-queries ClickHouse live, and the most-unfair-areas leaderboard.
-- **Should I appeal?** → two Claude advocates debate *for vs. against* in a durable Trigger.dev sub-task, then a verdict.
-- **File it** → a **ready-to-file PDF** — a complete Cook County Board of Review residential complaint with the grounds and a comparable-properties evidence grid, filled from live records.
-- **UK** → live VOA council-tax band check for any postcode, with a 1991 back-cast and the real Band D charge.
+---
 
-## The stack (both tools are load-bearing)
+## What you can do (every answer is a visual, never a wall of text)
 
-| Layer | Tech | Role |
-|---|---|---|
-| Primary database | **ClickHouse Cloud** | 6M+ UK sales + 1.6M US parcels; live `geoDistance` comps, IAAO sales-ratio science (PRD/COD), sub-second regressivity aggregation |
-| Orchestration | **Trigger.dev `chat.agent()`** | the agent loop + durable long-running ingestion tasks + appeal generation |
-| OLTP (bonus) | **ClickHouse Cloud Postgres** | saved properties & appeals, joined live into ClickHouse via `postgresql()` |
-| Frontend | **Next.js · MapLibre GL · Recharts** | the response *is* a map / chart / interactive component |
-| Agent brain | **Claude (Anthropic)** via AI SDK | tool routing + one-sentence narration |
+| Ask this | You get back |
+|---|---|
+| **"Am I overtaxed at `<address>`?"** | A plain-English **verdict** ("you're overpaying ~$3,793/yr"), a **map of your street** with your home glowing red against neighbours, and the **comparable sales** we used. |
+| **"Ask the data anything"** (e.g. *"which Chicago areas overpay most for homes under $300k?"*) | The agent **writes a live ClickHouse query itself**, runs it safely, and shows you a **chart + table + the exact SQL it wrote.** |
+| **"Show me the Tax Divide map"** | An **explorable heatmap** of over-assessment across the whole county, built from 1.6M real homes, zoom and click any area. |
+| **"Is Cook County fair?"** | A fairness study with an **interactive slider** that re-runs the numbers over ClickHouse as you drag it, plus a leaderboard of the most unfair areas. |
+| **"Should I appeal?"** | **Two AI advocates debate it** (one for, one against) as a durable background job, then give a verdict. |
+| **"File it"** | A **real, filled-in appeal PDF**: a complete Cook County Board of Review complaint with the legal grounds and an evidence grid, ready to send. |
+| **"Check `<UK postcode>`"** | A **live council-tax band check** against the official VOA, with a 1991 back-check and your council's real Band D charge. |
 
-## Data actually loaded (all real, all live)
+After every answer, **"Ask next" chips** suggest the natural follow-up, so you're gently guided through everything. All answers are written in **warm, plain English**, no jargon.
 
-- **US — two counties:** **Cook County** (Chicago) — ~1.59M residential **parcels** (geo + address), ~1.59M **assessments**, ~69k arms-length **sales**; and **Allegheny County** (Pittsburgh, [WPRDC](https://data.wprdc.org/dataset/property-assessments)) — ~456k assessments + ~52k sales. Two counties proves the pipeline generalises.
-- **UK — [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads):** **6.06M** real sales (2019–2024, Open Government Licence). Council-tax **bands are fetched live from the VOA** band-check service per postcode (no bulk dataset exists) and cached in ClickHouse; the **Band D charge** per council comes from gov.uk (135 authorities, live).
-- Reference inputs (tax rates, statutory band ratios, 1991 baselines) are consolidated + sourced in [`lib/assumptions.ts`](lib/assumptions.ts) and shown at **/methodology**.
+---
 
-## Architecture
+## How it works (simple architecture)
 
 ```mermaid
 flowchart TD
-  U["User types an address"] --> UI["Next.js UI · streaming visuals"]
-  UI --> AGENT["Trigger.dev chat.agent()"]
-  AGENT --> TOOLS["Tools: findProperty · analyzeProperty · streetMap<br/>regressivity · regressivityMap · fairnessLeaderboard · checkUkBand · appeal"]
-  TOOLS --> PDF["Fileable appeal PDF (pdf-lib)<br/>grounds + comps evidence grid"]
-  AGENT --> SUB["appeal-debate · durable sub-task (2 AI advocates)"]
-  TOOLS --> CH[("ClickHouse — PRIMARY DB<br/>geoDistance comps · PRD/COD · impact<br/>MV latest_sales · url() zero-ETL")]
-  TOOLS --> VOA["Live VOA council-tax band lookup"]
-  CH -->|"postgresql() federation"| PG[("Postgres OLTP<br/>saved properties · appeals")]
-  ING["Trigger.dev ingestion tasks"] --> CH
-  SRC["Cook County · Allegheny · UK Land Registry"] --> ING
-  CRON["Scheduled task: watch-properties (cron)"] --> PG
+  U([You type an address<br/>or ask a question]) --> UI[Next.js app<br/>answers are maps, charts, cards]
+  UI <--> AG[Trigger.dev chat.agent<br/>the brain that routes everything]
+
+  AG --> T1[Check a home]
+  AG --> T2[Ask the data anything<br/>writes live SQL]
+  AG --> T3[Fairness + Tax Divide map]
+  AG --> T4[UK council-tax band]
+  AG --> DEB[[Durable sub-task<br/>2 AI advocates debate]]
+
+  T1 --> CH
+  T2 --> CH
+  T3 --> CH
+  T4 --> VOA[Live VOA lookup]
+
+  CH[(ClickHouse<br/>PRIMARY DATABASE<br/>8M+ rows, sub-second)]
+  CH <-->|postgresql| PG[(Postgres OLTP<br/>your saved appeals)]
+
+  ING[/Trigger ingestion tasks<br/>zero-ETL via url/] --> CH
+  CRON[/Scheduled cron<br/>watch my home/] --> PG
 ```
 
-## How ClickHouse & Trigger.dev are used (both load-bearing)
+**In one sentence:** you talk to a **Trigger.dev agent**, it calls tools that query **ClickHouse** (the primary database) live, and the answer comes back as something you can *see and explore*.
 
-**ClickHouse — the primary database and the star of the demo.**
-- The whole analytical layer: `geoDistance()` comparable-sales, local sales-ratio, and the **regressivity** study (**PRD** + **COD**, the IAAO uniformity metrics) computed over **60k+ sold parcels sub-second**.
-- **The Tax Divide heatmap** is a pure ClickHouse spatial aggregation — `round(lat,2), round(lng,2), count(), avg(ratio)` over ~1.6M parcels ⋈ assessments ⋈ the `latest_sales` materialized view — ~1,800 map cells in ~200ms, no external GIS.
-- **Zero-ETL ingestion:** the ingestion tasks run `INSERT … SELECT FROM url(...)` so ClickHouse reads the raw government CSVs straight off HTTP — no separate loader.
-- **OLTP+OLAP federation:** a single ClickHouse query reads the user's Postgres rows via the `postgresql()` table function and JOINs them against the assessment/sales tables (see [`lib/portfolio.ts`](lib/portfolio.ts)).
-- Latency is surfaced in the UI (the ⚡ badge) — the speed claim is shown, not asserted.
+---
 
-**Trigger.dev — the orchestration layer.**
-- **`chat.agent("overtaxed")`** ([`trigger/chat.ts`](trigger/chat.ts)) drives the whole conversation; tools return **visualization specs**, never prose.
-- **Durable, long-running ingestion tasks** ([`trigger/ingest.ts`](trigger/ingest.ts)): UK Land Registry (per year), Cook County assessments+sales, and the parcel geo/address join — retryable, no timeouts, visible in the Trigger dashboard.
-- Tools: `findProperty`, `analyzeProperty`, `streetMap`, `regressivity`, `regressivityMap`, `fairnessLeaderboard`, `checkUkBand`, `generateAppealPacket`.
-- **Durable sub-task orchestration:** the agent delegates the *for-vs-against* appeal debate to the `appeal-debate` child task ([`trigger/debate.ts`](trigger/debate.ts)) — two Claude advocates run in parallel, then a deterministic verdict.
-- **Scheduled task:** `watch-properties` ([`trigger/watch.ts`](trigger/watch.ts)) re-checks saved properties on a cron and snapshots changes.
+## Why both tools are essential
 
-## Bonus — best OLTP + OLAP integration
+### ClickHouse is the primary database and the star
 
-**ClickHouse Cloud Postgres (OLTP)** stores saved properties and appeal status; the **ClickHouse (OLAP)** analytical tables hold 6M+ rows. The "My Portfolio" view runs **one ClickHouse query** that federates Postgres via `postgresql()` and joins it against the OLAP tables — OLTP + OLAP in a single statement, one vendor.
+- **Comparable sales** by `geoDistance()`, and the **fairness science** (PRD and COD, the standard IAAO uniformity metrics) computed over 60k+ sold homes, **sub-second**.
+- **The Tax Divide heatmap** is one ClickHouse spatial query: `round(lat,2), round(lng,2), count(), avg(ratio)` over 1.6M homes joined to a **materialized view** of latest sales, about **1,800 map tiles in ~200ms**, no external mapping service.
+- **Ask the data anything:** the agent turns your question into a **safe, read-only ClickHouse query** (locked to `SELECT` only, with row and time caps) and runs it live. This is the "ask my data anything" idea, on a real civic dataset.
+- **Zero-ETL ingestion:** data loads with `INSERT ... SELECT FROM url(...)`, so ClickHouse reads the raw government CSVs straight off the web, no separate loader.
+- **OLTP + OLAP in one query:** the `postgresql()` table function joins your saved appeals (Postgres) to the analytics tables (ClickHouse) in a single statement.
+- Every answer shows its **query latency**, so the speed is proven on screen, not claimed.
 
-## Local development
+### Trigger.dev is the orchestration layer
+
+- **`chat.agent("overtaxed")`** ([`trigger/chat.ts`](trigger/chat.ts)) runs the whole conversation. Tools return **visual specs**, never prose.
+- **Durable, long-running ingestion tasks** ([`trigger/ingest.ts`](trigger/ingest.ts)) stream millions of rows into ClickHouse, retryable, no timeouts.
+- **A durable sub-task** ([`trigger/debate.ts`](trigger/debate.ts)): the agent hands the for-vs-against appeal debate to a child task where two Claude advocates argue in parallel, then a verdict.
+- **A scheduled (cron) task** ([`trigger/watch.ts`](trigger/watch.ts)) re-checks saved homes and snapshots changes (OLTP → OLAP → OLTP).
+
+---
+
+## Bonus category: best OLTP + OLAP integration
+
+Your saved appeals live in **Postgres (OLTP)**. The analytics live in **ClickHouse (OLAP)** across 8M+ rows. The portfolio page runs **one ClickHouse query** that pulls the Postgres rows via `postgresql()` and joins them against the assessment and sales tables. **One statement, two engines**, with the query and its latency shown right on the page.
+
+---
+
+## The data (all real, all live)
+
+- **US, two counties.** **Cook County** (Chicago): ~1.59M **parcels** (location + address), ~1.59M **assessments**, ~69k arms-length **sales**. **Allegheny County** (Pittsburgh, [WPRDC](https://data.wprdc.org/dataset/property-assessments)): ~456k assessments + ~52k sales. Two counties proves it generalises.
+- **UK.** **6.06M** real sales from [HM Land Registry Price Paid](https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads). Council-tax **bands are fetched live from the VOA** per postcode (no bulk file exists) and cached in ClickHouse; each council's **Band D charge** comes live from gov.uk.
+- A handful of statutory reference values (tax rates, 1991 band ranges) are sourced and documented in [`lib/assumptions.ts`](lib/assumptions.ts) and shown at **/methodology**.
+
+---
+
+## Honesty by design
+
+Every number is computed from public records and clearly labelled as an estimate, not advice. Jargon has plain-English tooltips, there's an optional "show the maths" on every result, and the national projection shows its full method and sources at **/methodology**. Nothing is mocked or hardcoded.
+
+---
+
+## The stack
+
+| Layer | Tech |
+|---|---|
+| Primary database | **ClickHouse Cloud** |
+| Orchestration + agent | **Trigger.dev `chat.agent()`** |
+| OLTP (bonus) | **Postgres**, federated via `postgresql()` |
+| Agent brain | **Claude (Anthropic)** via the AI SDK |
+| Frontend | **Next.js · MapLibre GL · Recharts** |
+| Appeal PDF | **pdf-lib** |
+
+---
+
+## Run it locally
 
 ```bash
 cp .env.example .env          # fill in ClickHouse, Postgres, Trigger, Anthropic
 npm install
 node scripts/apply-sql.mjs db/schema.sql             # ClickHouse tables
-node scripts/apply-sql.mjs db/materialized-views.sql # latest_sales MV
+node scripts/apply-sql.mjs db/materialized-views.sql # latest_sales materialized view
 node scripts/apply-pg.mjs  db/postgres-schema.sql    # Postgres (OLTP) tables
 npm test                                              # unit tests
-npx trigger.dev@latest dev    # orchestration worker
-npm run dev                   # web app → http://localhost:3000
+npx trigger.dev@latest dev    # the agent + tasks
+npm run dev                   # web app at http://localhost:3000
 # then load real data:
 node scripts/run-task.mjs ingest-uk-land-registry '{"year":2023}'
 node scripts/run-task.mjs ingest-cook-county '{"year":2023}'
 node scripts/run-task.mjs ingest-cook-parcels '{"year":2023}'
 ```
-
-## Methodology & honesty
-
-Overtaxed makes an **estimate from public records — not tax or legal advice**. What's computed live vs. sourced, plus limitations, are documented at **/methodology** and in [`lib/assumptions.ts`](lib/assumptions.ts).
 
 ## License
 
