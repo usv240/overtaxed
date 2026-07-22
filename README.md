@@ -30,7 +30,8 @@ The prices that prove it are public. The problem is nobody could ever *query* th
 | **"Show me the Tax Divide map"** | An **explorable heatmap** of over-assessment across the whole county, built from 1.6M real homes, zoom and click any area. |
 | **"Is Cook County fair?"** | A fairness study with an **interactive slider** that re-runs the numbers over ClickHouse as you drag it, plus a leaderboard of the most unfair areas. |
 | **"Should I appeal?"** | **Two AI advocates debate it** (one for, one against) as a durable background job, then give a verdict. |
-| **"File it"** | A **real, filled-in appeal PDF**: a complete Cook County Board of Review complaint with the legal grounds and an evidence grid, ready to send. |
+| **"File it"** | A **real, filled-in appeal PDF**: a complete Cook County Board of Review complaint with the legal grounds and an evidence grid, ready for review. |
+| **"Watch this home"** | One click enrols the home in a **scheduled Trigger.dev task** that re-checks it on a cron and flags it if it becomes more appeal-worthy (a live OLTP write to Postgres). |
 | **"Check `<UK postcode>`"** | A **live council-tax band check** against the official VOA, with a 1991 back-check and your council's real Band D charge. |
 
 After every answer, **"Ask next" chips** suggest the natural follow-up, so you're gently guided through everything. All answers are written in **warm, plain English**, no jargon.
@@ -82,7 +83,7 @@ flowchart TD
 - **`chat.agent("overtaxed")`** ([`trigger/chat.ts`](trigger/chat.ts)) runs the whole conversation. Tools return **visual specs**, never prose.
 - **Durable, long-running ingestion tasks** ([`trigger/ingest.ts`](trigger/ingest.ts)) stream millions of rows into ClickHouse, retryable, no timeouts.
 - **A durable sub-task** ([`trigger/debate.ts`](trigger/debate.ts)): the agent hands the for-vs-against appeal debate to a child task where two Claude advocates argue in parallel, then a verdict.
-- **A scheduled (cron) task** ([`trigger/watch.ts`](trigger/watch.ts)) re-checks saved homes and snapshots changes (OLTP → OLAP → OLTP).
+- **A scheduled (cron) task** ([`trigger/watch.ts`](trigger/watch.ts)) re-checks saved homes and snapshots changes (OLTP → OLAP → OLTP). The **"Watch this home"** button in the UI enrols a home in it with a single click, so the durable, scheduled workflow is something you can actually see and trigger.
 
 ---
 

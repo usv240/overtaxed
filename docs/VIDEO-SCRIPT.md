@@ -25,11 +25,11 @@
 **Screen:** Scroll to the **debate** card (For / Against / **FILE IT**). Then cut to the **Trigger dashboard Runs tab** — point at the parent `overtaxed` run **and** the child `appeal-debate` run, both green. Hold it **~7 seconds.**
 **VO:** "Should they actually appeal? The whole conversation is a Trigger.dev `chat.agent` run, and it launches this two-sided analysis as a durable child task — one side argues for, one against. Because it's durable, the long-running work and retries don't vanish when a browser request ends."
 
-## 4 · Turn analysis into action (1:20–1:38)
-**Screen:** Click **"Download filled appeal (PDF)"**, open it briefly.
-**VO:** "Then it turns ten seconds of analysis into a pre-filled appeal — the property details, the grounds, and the comparable-sale evidence, organised and ready for the homeowner to review."
+## 4 · Turn analysis into action (1:20–1:44)
+**Screen:** Click **"Download filled appeal (PDF)"**, open it for a beat. Then click **"Watch this home"** — it flips to *"Watching — a scheduled Trigger.dev task re-checks it."*
+**VO:** "Then it turns ten seconds of analysis into a pre-filled appeal — the property details, the grounds, and the comparable-sale evidence, ready for review. And one click puts the home on watch: a scheduled Trigger.dev task quietly re-checks it over time and flags it if it becomes more appeal-worthy. So it's not a one-time lookup — it's a durable workflow that keeps working."
 
-## 5 · CLIMAX — ask the data anything (1:38–2:30)
+## 5 · CLIMAX — ask the data anything (1:44–2:34)
 **Screen:** Back on the app. Type: `Which Chicago areas overpay the most for homes under $300k?` → the **chart + table** appear → **open "View the ClickHouse query"** and **let the SQL sit on screen ~3 seconds.** Point the cursor at `sale_price < 300000` and the `GROUP BY`.
 **VO:** "But this isn't a fixed dashboard. Ask a brand-new question, and the agent writes its own ClickHouse query — safe and read-only — runs it across the live data, and picks a visual answer. You can see it here: it filtered homes under three hundred thousand, grouped by area, and ranked the worst. The exact SQL and the run time stay visible, so every answer is auditable."
 
