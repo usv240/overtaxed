@@ -16,9 +16,9 @@ const usd0 = (n: number) => new Intl.NumberFormat("en", { style: "currency", cur
 
 function Step({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm transition-shadow hover:shadow-md">
-      <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg">{n}</div>
-      <h3 className="font-semibold">{title}</h3>
+    <div className="card-premium p-6 hover:-translate-y-0.5">
+      <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-sm font-bold text-accent-fg shadow-sm">{n}</div>
+      <h3 className="font-semibold tracking-tight">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">{children}</p>
     </div>
   );
@@ -26,20 +26,20 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
 
 function Stat({ big, small }: { big: string; small: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
-      <div className="text-3xl font-bold tracking-tight text-accent">{big}</div>
-      <p className="mt-1.5 text-sm leading-relaxed text-muted">{small}</p>
+    <div className="card-premium p-6">
+      <div className="text-[2rem] font-bold leading-none tracking-tight text-accent tabular-nums">{big}</div>
+      <p className="mt-3 text-sm leading-relaxed text-muted">{small}</p>
     </div>
   );
 }
 
 function Feature({ icon, title, children }: { icon: React.ComponentProps<typeof Icon>["name"]; title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+    <div className="card-premium p-6 hover:-translate-y-0.5">
+      <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-accent ring-1 ring-accent/10">
         <Icon name={icon} />
       </div>
-      <h3 className="mt-3.5 font-semibold">{title}</h3>
+      <h3 className="mt-4 font-semibold tracking-tight">{title}</h3>
       <p className="mt-1.5 text-sm leading-relaxed text-muted">{children}</p>
     </div>
   );
@@ -47,12 +47,12 @@ function Feature({ icon, title, children }: { icon: React.ComponentProps<typeof 
 
 function Faq({ q, a }: { q: string; a: React.ReactNode }) {
   return (
-    <details className="group rounded-xl border border-border bg-surface px-4 py-3.5">
+    <details className="group rounded-xl border border-border bg-surface px-5 py-4 transition-colors open:border-border-strong hover:border-border-strong">
       <summary className="flex cursor-pointer list-none items-center font-medium marker:content-none">
         <span className="mr-3 text-lg font-normal leading-none text-accent transition-transform group-open:rotate-45">+</span>
         {q}
       </summary>
-      <p className="mt-2 pl-7 text-sm leading-relaxed text-muted">{a}</p>
+      <p className="mt-2.5 pl-8 text-sm leading-relaxed text-muted">{a}</p>
     </details>
   );
 }
@@ -72,7 +72,10 @@ export default async function Landing() {
       {/* Nav */}
       <nav className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <span className="text-lg font-bold tracking-tight">Overtaxed</span>
+          <span className="flex items-center gap-2 text-lg font-bold tracking-tight">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent text-sm text-accent-fg shadow-sm">O</span>
+            Overtaxed
+          </span>
           <div className="flex items-center gap-1.5 text-sm">
             <a href="#how" className="hidden rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-foreground sm:inline">How it works</a>
             <Link href="/methodology" className="hidden rounded-full px-3 py-1.5 text-muted hover:bg-surface-2 hover:text-foreground sm:inline">Methodology</Link>
@@ -83,28 +86,39 @@ export default async function Landing() {
       </nav>
 
       {/* Hero */}
-      <header className="hero-glow">
-        <div className="mx-auto max-w-3xl px-4 pb-16 pt-20 text-center">
-          <p className="mb-4 inline-block rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
-            US property tax · UK council tax
-          </p>
-          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl">
-            You could be overpaying<br />tax on your home.
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            The tax office often values homes too high, and almost nobody checks. Type your address and see if
-            you&apos;re one of them, with the proof on a map, in seconds.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/app" className="w-full rounded-full bg-accent px-7 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg sm:w-auto">Check my home, free</Link>
-            <a href="#how" className="w-full rounded-full border border-border bg-surface px-7 py-3.5 font-medium shadow-sm transition-colors hover:bg-surface-2 sm:w-auto">See how it works</a>
+      <header className="relative overflow-hidden border-b border-border hero-glow">
+        <div className="pointer-events-none absolute inset-0 grid-texture" aria-hidden />
+        <div className="relative mx-auto max-w-3xl px-4 pb-20 pt-24 text-center sm:pt-28">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3.5 py-1.5 text-xs font-medium text-muted shadow-sm backdrop-blur">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent/60" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+            </span>
+            Live on public records · US property tax and UK council tax
           </div>
-          <p className="mt-4 text-xs text-muted">No sign-up. It&apos;s an estimate from public records, not tax advice.</p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted">
+          <h1 className="text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[4.5rem]">
+            You could be overpaying
+            <span className="block bg-gradient-to-r from-accent to-[#7c6cf7] bg-clip-text text-transparent">
+              tax on your home.
+            </span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted">
+            The tax office often values homes too high, and almost nobody checks. Type your address and see the
+            proof on a map, in seconds.
+          </p>
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link href="/app" className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-7 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg sm:w-auto">
+              Check my home, free
+              <Icon name="arrowRight" size={17} className="transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <a href="#how" className="inline-flex w-full items-center justify-center rounded-full border border-border-strong bg-surface px-7 py-3.5 font-medium shadow-sm transition-colors hover:bg-surface-2 sm:w-auto">See how it works</a>
+          </div>
+          <p className="mt-4 text-xs text-muted">No sign-up. An estimate from public records, not tax advice.</p>
+          <div className="mt-12 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-xs font-medium text-muted">
             <span className="inline-flex items-center gap-1.5"><Icon name="check" size={14} className="text-accent" /> 6M+ UK sales</span>
-            <span className="text-border">•</span>
+            <span className="h-3.5 w-px bg-border-strong" />
             <span className="inline-flex items-center gap-1.5"><Icon name="check" size={14} className="text-accent" /> 1.6M Chicago parcels</span>
-            <span className="text-border">•</span>
+            <span className="h-3.5 w-px bg-border-strong" />
             <span className="inline-flex items-center gap-1.5"><Icon name="check" size={14} className="text-accent" /> 100% public records</span>
           </div>
         </div>
@@ -168,7 +182,7 @@ export default async function Landing() {
       {/* Two countries */}
       <section className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-border bg-surface p-7 shadow-sm">
+          <div className="card-premium p-7">
             <span className="inline-flex items-center rounded-md border border-border bg-surface-2 px-2 py-1 text-xs font-semibold tracking-wide text-muted">US</span>
             <h3 className="mt-3 text-lg font-semibold">United States: property tax</h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
@@ -221,9 +235,12 @@ export default async function Landing() {
       {/* CTA */}
       <section className="hero-glow">
         <div className="mx-auto max-w-3xl px-4 py-20 text-center">
-          <h2 className="text-3xl font-bold tracking-tight">Check your home in 10 seconds.</h2>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Check your home in 10 seconds.</h2>
           <p className="mx-auto mt-3 max-w-md text-muted">Free, no sign-up. You might be owed thousands.</p>
-          <Link href="/app" className="mt-6 inline-block rounded-full bg-accent px-8 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg">Check my home, free</Link>
+          <Link href="/app" className="group mt-7 inline-flex items-center gap-2 rounded-full bg-accent px-8 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg">
+            Check my home, free
+            <Icon name="arrowRight" size={17} className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </section>
 

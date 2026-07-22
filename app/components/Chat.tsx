@@ -154,10 +154,13 @@ export function Chat({ stats }: { stats: Stats }) {
                     onClick={() => send(e.q)}
                     className="group rounded-2xl border border-border bg-surface p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
                   >
-                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent ring-1 ring-accent/10 transition-transform group-hover:scale-105">
                       <Icon name={e.icon} size={18} />
                     </div>
-                    <div className="mt-2.5 text-sm font-semibold">{e.title}</div>
+                    <div className="mt-3 flex items-center gap-1 text-sm font-semibold tracking-tight">
+                      {e.title}
+                      <Icon name="arrowRight" size={13} className="text-muted opacity-0 -translate-x-1 transition-all group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-accent" />
+                    </div>
                     <div className="mt-1 text-xs leading-snug text-muted">{e.q}</div>
                   </button>
                 ))}
@@ -185,8 +188,8 @@ export function Chat({ stats }: { stats: Stats }) {
                     { big: "under 5%", small: "of people ever check or challenge it" },
                   ].map((s) => (
                     <div key={s.small} className="rounded-xl border border-border bg-surface p-4 text-left shadow-sm">
-                      <div className="text-2xl font-bold tracking-tight text-accent">{s.big}</div>
-                      <div className="mt-1 text-xs leading-snug text-muted">{s.small}</div>
+                      <div className="text-[1.6rem] font-bold leading-none tracking-tight text-accent tabular-nums">{s.big}</div>
+                      <div className="mt-2 text-xs leading-snug text-muted">{s.small}</div>
                     </div>
                   ))}
                 </div>
@@ -242,7 +245,7 @@ export function Chat({ stats }: { stats: Stats }) {
           </div>
         )}
         <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="mx-auto flex max-w-3xl items-center gap-2 px-4 pt-3">
-          <div className="flex flex-1 items-center gap-2 rounded-full border border-border bg-surface px-4 py-1 shadow-sm focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
+          <div className="flex flex-1 items-center gap-2 rounded-full border border-border-strong bg-surface px-4 py-1 shadow-sm transition-all focus-within:border-accent focus-within:shadow-md focus-within:ring-4 focus-within:ring-accent/10">
             <Icon name="pin" size={16} className="shrink-0 text-muted" />
             <input
               value={input}

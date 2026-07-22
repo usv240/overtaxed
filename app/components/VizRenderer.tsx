@@ -47,7 +47,7 @@ function Badge({ ms, rows }: { ms?: number; rows?: number }) {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-3 rounded-2xl border border-border bg-surface p-4 shadow-sm">
+    <div className="my-3 rounded-2xl border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md">
       {children}
     </div>
   );
@@ -93,15 +93,21 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
       const over = spec.overpaymentPerPeriod > 0;
       return (
         <Card>
-          <div className="flex items-baseline justify-between gap-3">
-            <h3 className={`text-2xl font-bold ${over ? "text-neg" : "text-pos"}`}>
-              {spec.headline}
-            </h3>
-            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-              spec.appealStrength === "strong" ? "bg-neg/10 text-neg"
-              : spec.appealStrength === "moderate" ? "bg-warn/10 text-warn"
-              : "bg-surface-2 text-muted"}`}>
-              appeal: {spec.appealStrength}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className={`text-[11px] font-semibold uppercase tracking-widest ${over ? "text-neg/80" : "text-pos/80"}`}>
+                {over ? "Verdict" : "Good news"}
+              </div>
+              <h3 className={`mt-1 text-[1.7rem] font-bold leading-tight tracking-tight ${over ? "text-neg" : "text-pos"}`}>
+                {spec.headline}
+              </h3>
+            </div>
+            <span className={`mt-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${
+              spec.appealStrength === "strong" ? "border-neg/20 bg-neg/10 text-neg"
+              : spec.appealStrength === "moderate" ? "border-warn/20 bg-warn/10 text-warn"
+              : "border-border bg-surface-2 text-muted"}`}>
+              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+              {spec.appealStrength} appeal
               <InfoTip label="Appeal strength">
                 How likely a challenge is to succeed, based on how far your home&apos;s value sticks out from
                 similar homes nearby. &quot;Strong&quot; means you have solid evidence to ask for a lower bill.
@@ -109,14 +115,14 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
             </span>
           </div>
           {spec.owedBack ? (
-            <p className="mt-1 text-sm text-muted">
-              Owed back: <strong>{money(spec.owedBack, spec.currency)}</strong>
+            <p className="mt-1.5 text-sm text-muted">
+              Owed back: <strong className="text-foreground">{money(spec.owedBack, spec.currency)}</strong>
             </p>
           ) : null}
           {spec.simple ? <Simple>{spec.simple}</Simple> : spec.subtitle && <p className="mt-2 text-sm text-muted">{spec.subtitle}</p>}
           {spec.overpaymentPerPeriod > 0 && (
-            <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-pos/10 px-3 py-1.5 text-sm font-medium text-pos">
-              <Icon name="check" size={15} className="shrink-0" />
+            <div className="mt-2.5 flex items-center gap-2 rounded-xl border border-pos/20 bg-pos/10 px-3.5 py-2.5 text-sm font-semibold text-pos">
+              <Icon name="check" size={16} className="shrink-0" />
               Reclaim about {money(spec.overpaymentPerPeriod, spec.currency)}/yr by appealing
               {spec.owedBack ? <>, plus {money(spec.owedBack, spec.currency)} backdated</> : null}.
             </div>
@@ -124,7 +130,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
           <TechDetails rows={spec.technicalRows} />
           <p className="mt-2 text-xs text-muted">
             Confidence: {spec.confidence}
-            <InfoTip label="Confidence">Based on how many recent comparable sales we found nearby. More comparables = higher confidence.</InfoTip>
+            <InfoTip label="Confidence">Based on how many recent comparable sales we found nearby. More comparables means higher confidence.</InfoTip>
             {" "}· estimate from public records, not tax advice
           </p>
           <Badge ms={ms} rows={rows} />
