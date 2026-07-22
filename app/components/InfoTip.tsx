@@ -24,7 +24,7 @@ export function InfoTip({ label, children }: { label?: string; children: React.R
       {open && (
         <span
           role="tooltip"
-          className="absolute left-1/2 top-6 z-50 w-60 -translate-x-1/2 rounded-lg bg-neutral-900 px-3 py-2 text-left text-xs font-normal leading-snug text-white shadow-xl dark:bg-neutral-700"
+          className="absolute bottom-6 left-1/2 z-50 w-60 -translate-x-1/2 rounded-lg bg-neutral-900 px-3 py-2 text-left text-xs font-normal leading-snug text-white shadow-xl dark:bg-neutral-700"
         >
           {label && <span className="mb-0.5 block font-semibold">{label}</span>}
           {children}

@@ -127,18 +127,18 @@ export function Chat({ stats }: { stats: Stats }) {
   const { messages, sendMessage, stop, status } = useChat({ transport });
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const atBottomRef = useRef(true);
-
-  const onScroll = () => {
-    const el = scrollRef.current;
-    if (el) atBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
-  };
+  const userMsgCount = useRef(0);
 
   useEffect(() => {
-    // only auto-scroll if the user is already at the bottom, never yank them up
-    const el = scrollRef.current;
-    if (el && atBottomRef.current) el.scrollTop = el.scrollHeight;
-  }, [messages, status]);
+    // Scroll ONLY when the user sends a new message (to reveal it).
+    // Never auto-scroll as results stream in, so the reader stays in control.
+    const count = messages.reduce((n, m) => n + (m.role === "user" ? 1 : 0), 0);
+    if (count > userMsgCount.current) {
+      userMsgCount.current = count;
+      const el = scrollRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+  }, [messages]);
 
   const send = (text: string) => {
     if (!text.trim()) return;
@@ -169,7 +169,7 @@ export function Chat({ stats }: { stats: Stats }) {
       <div className="flex flex-1 overflow-hidden">
         {/* Conversation column */}
         <main className="flex flex-1 flex-col overflow-hidden">
-      <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
           {empty ? (
             <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center px-4 py-10 text-center">
               <div className="animate-soft-pop relative mb-6">
