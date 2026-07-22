@@ -47,7 +47,7 @@ function Badge({ ms, rows }: { ms?: number; rows?: number }) {
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="my-3 rounded-2xl border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md">
+    <div className="animate-fade-up my-3 rounded-2xl border border-border bg-surface p-5 shadow-sm transition-shadow hover:shadow-md">
       {children}
     </div>
   );

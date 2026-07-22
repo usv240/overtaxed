@@ -96,17 +96,17 @@ export default async function Landing() {
             </span>
             Live on public records · US property tax and UK council tax
           </div>
-          <h1 className="text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[4.5rem]">
+          <h1 className="animate-fade-up text-[2.6rem] font-extrabold leading-[1.05] tracking-[-0.03em] sm:text-[4.5rem]" style={{ animationDelay: "80ms" }}>
             You could be overpaying
             <span className="block bg-gradient-to-r from-accent to-[#7c6cf7] bg-clip-text text-transparent">
               tax on your home.
             </span>
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted">
+          <p className="animate-fade-up mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted" style={{ animationDelay: "160ms" }}>
             The tax office often values homes too high, and almost nobody checks. Type your address and see the
             proof on a map, in seconds.
           </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="animate-fade-up mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row" style={{ animationDelay: "240ms" }}>
             <Link href="/app" className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent px-7 py-3.5 font-semibold text-accent-fg shadow-md transition-all hover:bg-accent-hover hover:shadow-lg sm:w-auto">
               Check my home, free
               <Icon name="arrowRight" size={17} className="transition-transform group-hover:translate-x-0.5" />

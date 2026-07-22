@@ -136,40 +136,46 @@ export function Chat({ stats }: { stats: Stats }) {
       <div ref={scrollRef} onScroll={onScroll} className="flex-1 overflow-y-auto">
           {empty ? (
             <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center px-4 py-10 text-center">
-              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-[#7c6cf7] text-accent-fg shadow-lg shadow-accent/25 ring-1 ring-white/15">
-                <Icon name="home" size={26} />
+              <div className="animate-soft-pop relative mb-6">
+                <div className="absolute left-1/2 top-1/2 -z-10 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/30 blur-2xl" aria-hidden />
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-accent to-[#7c6cf7] text-accent-fg shadow-lg shadow-accent/30 ring-1 ring-white/15">
+                  <Icon name="home" size={26} />
+                </div>
               </div>
-              <div className="mb-3.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-muted shadow-sm">
+              <div className="animate-fade-up mb-3.5 inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-muted shadow-sm" style={{ animationDelay: "60ms" }}>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-pos/60" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-pos" />
                 </span>
                 Property tax, made visual
               </div>
-              <h1 className="text-[30px] font-bold leading-[1.08] tracking-[-0.02em] sm:text-[42px]">What home should we check?</h1>
-              <p className="mx-auto mt-3.5 max-w-md text-[15px] leading-relaxed text-muted">
+              <h1 className="animate-fade-up text-[30px] font-bold leading-[1.08] tracking-[-0.02em] sm:text-[42px]" style={{ animationDelay: "120ms" }}>What home should we check?</h1>
+              <p className="animate-fade-up mx-auto mt-3.5 max-w-md text-[15px] leading-relaxed text-muted" style={{ animationDelay: "180ms" }}>
                 Type any address and get a picture back: a verdict, a map of your street, and a ready-to-file appeal. Not a wall of text.
               </p>
               <div className="mt-8 grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                {EXAMPLES.map((e) => (
+                {EXAMPLES.map((e, i) => (
                   <button
                     key={e.q}
                     onClick={() => send(e.q)}
-                    className="group rounded-2xl border border-border bg-surface p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-accent hover:shadow-md"
+                    style={{ animationDelay: `${240 + i * 70}ms` }}
+                    className="group animate-fade-up relative overflow-hidden rounded-2xl border border-border bg-surface p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-lg"
                   >
-                    <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-accent ring-1 ring-accent/10 transition-transform group-hover:scale-105">
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-accent/[0.04] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                    <div className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl bg-accent-soft text-accent ring-1 ring-accent/10 transition-all duration-300 group-hover:scale-110 group-hover:shadow-sm group-hover:shadow-accent/20">
                       <Icon name={e.icon} size={18} />
                     </div>
-                    <div className="mt-3 flex items-center gap-1 text-sm font-semibold tracking-tight">
+                    <div className="relative mt-3 flex items-center gap-1 text-sm font-semibold tracking-tight">
                       {e.title}
-                      <Icon name="arrowRight" size={13} className="text-muted opacity-0 -translate-x-1 transition-all group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-accent" />
+                      <Icon name="arrowRight" size={13} className="text-muted opacity-0 -translate-x-1 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-accent" />
                     </div>
-                    <div className="mt-1 text-xs leading-snug text-muted">{e.q}</div>
+                    <div className="relative mt-1 text-xs leading-snug text-muted">{e.q}</div>
                   </button>
                 ))}
               </div>
 
-              <p className="mt-7 max-w-lg text-sm leading-relaxed text-muted">
+              <p className="animate-fade-up mt-7 max-w-lg text-sm leading-relaxed text-muted" style={{ animationDelay: "560ms" }}>
                 <strong className="text-foreground">~${compactN(stats.nationalAnnual)}/yr</strong> is over-shifted onto lower-value US homes by biased assessments, projected from the ${compactN(stats.impactAnnual)} we measure live in Cook County.{" "}
                 <a href="/methodology" className="font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">See the maths.</a>
               </p>
