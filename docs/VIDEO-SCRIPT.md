@@ -1,80 +1,68 @@
-# Overtaxed — Demo Video Script (storytelling, ≤5:00)
+# Overtaxed — Demo Video Script (director's cut, ~4:20)
 
-**The rules:** max 5 minutes, on YouTube, **open straight on a screen recording** (no title card, no talking-head intro), judged on *insight-to-words ratio*. Judges include the ClickHouse founder + ~8 ClickHouse staff and the Trigger.dev founders, so **let them SEE the data working**.
+**Rules:** max 5 min, YouTube, **open straight on a screen recording** (no title card, no face). Judged on *insight-to-words ratio*. Judges include the ClickHouse founder + ~8 ClickHouse staff and the Trigger.dev founders, so **let them SEE the data working** — and give **both** tools their moment.
 
-**The story in one line:** one person quietly overpays → we prove it, help them fight it → then we pull back and show it's a **$20-billion-a-year** national injustice, and this one tool answers it for anyone, on live data.
+**Target 4:15–4:35.** Do not fill the full 5:00; leave headroom for pauses. **~560 words of narration, max.**
 
-**Setup before you record**
-- Full-screen browser on `https://overtaxed-ujwal-s-projects5.vercel.app`, **light mode**, DevTools closed.
-- Second tab: **Trigger.dev dashboard → Runs (Production)**.
-- Do **one warm-up run of each flow first** so ClickHouse is hot (no cold-start lag on camera).
-- Speak slowly and plainly. Let each visual sit for a beat. **~600 words of narration, max.**
+**The three things a judge must remember afterwards:**
+1. One homeowner gets an understandable, evidence-backed answer in seconds.
+2. ClickHouse lets the agent explore millions of records live and visually (it even writes its own SQL).
+3. Trigger.dev turns that into a durable, production-style workflow.
 
----
-
-## 1 · The hook — a quiet, everyday injustice (0:00–0:20)
-**Screen:** Start on the app's home screen (`/app`), clean and still.
-**VO:** "Right now, one in three American homes is being taxed as if it's worth more than it really is. Almost nobody checks, because the proof was buried in millions of public records nobody could search. So let's search it. This is my home address."
-**Screen:** Type **`Am I overtaxed at 4317 N Monticello Ave, Chicago?`** and hit send.
-
-## 2 · The verdict — real money, in one line (0:20–0:50)
-**Screen:** The verdict card streams in: **"You're overpaying ~$3,793/yr,"** with the plain-English explanation.
-**VO:** "No paragraph, no jargon. Just the answer: this home is overpaying about $3,800 a year. And here's the proof."
-**Screen:** Scroll to the **street map** (subject glowing red among neighbours) and the **comparable sales** table. **Hover the `⚡ ClickHouse` latency badge.**
-**VO:** "Every red home is taxed above what it actually sold for. This map was built live, from real sales next door, in a couple hundred milliseconds, in ClickHouse."
-
-## 3 · Should I fight it? — two AIs debate it (0:50–1:20)
-**Screen:** Scroll to the **"Two AI advocates debate it"** card: For / Against / **VERDICT: FILE IT**.
-**VO:** "Not sure if it's worth appealing? Two AIs argue it out for you, one for, one honest about the risks, and give you a straight answer. That debate runs as a durable background job on Trigger.dev."
-**Screen:** Quick cut to the **Trigger dashboard Runs tab** showing the `overtaxed` run and the `appeal-debate` child run, then back.
-
-## 4 · Fight it — a real, ready-to-file appeal (1:20–1:45)
-**Screen:** Click **"Download filled appeal (PDF)"**, open the PDF.
-**VO:** "And it's not a toy. That's a complete, filled-in Cook County appeal, the legal grounds and the evidence, ready to send. We just handed a stranger their money back."
-
-## 5 · The turn — "but you can ask it anything" (1:45–2:30)
-**Screen:** Back on the app. In the box, type a fresh question: **`Which Chicago areas overpay the most for homes under $300k?`**
-**VO:** "But this isn't just four buttons. You can ask it *anything*. Watch."
-**Screen:** The **dataResult** card appears: a chart + table. **Open the "View the ClickHouse query" panel** to reveal the SQL.
-**VO:** "It wrote that ClickHouse query itself, safely, ran it over millions of rows, and drew the answer, live. This is 'ask your data anything,' pointed at every home in the county."
-
-## 6 · Zoom out — The Tax Divide (2:30–3:00)
-**Screen:** Click the **"The Tax Divide map"** preset. The heatmap paints in; zoom into Chicago, click a red area.
-**VO:** "Now pull back. This is the whole county at once, a million and a half homes, coloured by how unfairly they're taxed. The red areas are where cheaper homes are overvalued the most. It's the same quiet bias, everywhere."
-
-## 7 · Prove it's systemic — the fairness dial (3:00–3:25)
-**Screen:** Click **"Is Cook County fair?"**. Scatter + PRD/COD appear. **Drag the price slider.**
-**VO:** "And you can measure it. Drag this, and the fairness score recomputes live over ClickHouse. The pattern is clear: the less a home is worth, the more it's over-taxed. That's the opposite of fair."
-
-## 8 · It's not just America (3:25–3:45)
-**Screen:** Click **"Check a UK band"**. The UK verdict appears.
-**VO:** "And it's not just the US. Any UK postcode gets checked, live, against the official valuation office, going all the way back to a rushed 1991 estimate. Same idea, same injustice, different country."
-
-## 9 · The impact — why this matters (3:45–4:25)
-**Screen:** Open **/methodology**, scroll to the **"~$21B/yr"** panel with the transparent maths + the QJE citation.
-**VO:** "So how big is this really? We *measure* about $460 million a year of unfair over-assessment in Cook County alone. Scaled across the country, and backed by national research covering a hundred and eighteen million homes, that's on the order of **twenty billion dollars a year**, quietly taken from the people who can least afford it. Every one of them can now check their address, see the proof, and fight back, in about ten seconds."
-
-## 10 · Under the hood + close (4:25–4:55)
-**Screen:** Briefly pan the "Under the hood" sidebar / the methodology SQL blocks.
-**VO:** "Underneath, it's two tools doing real work: ClickHouse as the primary database, doing all of this live over eight million rows, and Trigger.dev running the agent, the background jobs, and even a query that joins our Postgres data straight into ClickHouse in one statement."
-**Screen:** End on the live URL + the GitHub link.
-**VO (last line):** "That's Overtaxed. It's live, it's open source, and it turns a wall of buried public records into an answer anyone can see. Thanks for watching."
+**Setup:** full-screen, light mode, DevTools closed. Second tab on **Trigger.dev → Runs (Production)**. **Warm up every flow once** so ClickHouse is hot. Speak slowly and plainly. Say a number the moment it's on screen.
 
 ---
 
-## The whole story in 8 beats (if you'd rather freestyle)
-1. 1 in 3 homes overpay, nobody checks → **type my address**.
-2. **$3,793/yr verdict** + the **street map** (⚡ ClickHouse speed).
-3. **Two AIs debate** → FILE IT (durable Trigger sub-task).
-4. **Download the real appeal PDF** (money back).
-5. **"Ask it anything"** → it writes **live ClickHouse SQL** → chart (the wow).
-6. **The Tax Divide heatmap** → the bias, everywhere.
-7. **Fairness slider** (recomputes live) + **UK band check** (dual country).
-8. **$460M measured → ~$20B national** → close: live, open source, ClickHouse + Trigger.
+## 1 · Hook (0:00–0:12)
+**Screen:** Address already typed in the box: `Am I overtaxed at 4317 N Monticello Ave, Chicago?` — press Enter around second 8.
+**VO:** "Millions of homeowners may be paying tax on a value higher than their home is really worth. The proof is public, but buried across millions of records nobody could search. So let's check a real Chicago home."
+
+## 2 · The verdict + visual proof (0:12–0:48)
+**Screen:** Verdict card streams in: **"You're overpaying ~$3,793/yr,"** plain-English explanation → scroll to the **street map** (subject red) and **comparable sales**. **Hover the `⚡ ClickHouse` latency badge.**
+**VO:** "In one line: this assessment looks about $3,800 a year too high. Red marks homes assessed high relative to the sales evidence around them. That map and those comparables were computed live in ClickHouse, in a few hundred milliseconds."
+
+## 3 · Trigger.dev: the durable workflow (0:48–1:20)
+**Screen:** Scroll to the **debate** card (For / Against / **FILE IT**). Then cut to the **Trigger dashboard Runs tab** — point at the parent `overtaxed` run **and** the child `appeal-debate` run, both green. Hold it **~7 seconds.**
+**VO:** "Should they actually appeal? The whole conversation is a Trigger.dev `chat.agent` run, and it launches this two-sided analysis as a durable child task — one side argues for, one against. Because it's durable, the long-running work and retries don't vanish when a browser request ends."
+
+## 4 · Turn analysis into action (1:20–1:38)
+**Screen:** Click **"Download filled appeal (PDF)"**, open it briefly.
+**VO:** "Then it turns ten seconds of analysis into a pre-filled appeal — the property details, the grounds, and the comparable-sale evidence, organised and ready for the homeowner to review."
+
+## 5 · CLIMAX — ask the data anything (1:38–2:30)
+**Screen:** Back on the app. Type: `Which Chicago areas overpay the most for homes under $300k?` → the **chart + table** appear → **open "View the ClickHouse query"** and **let the SQL sit on screen ~3 seconds.** Point the cursor at `sale_price < 300000` and the `GROUP BY`.
+**VO:** "But this isn't a fixed dashboard. Ask a brand-new question, and the agent writes its own ClickHouse query — safe and read-only — runs it across the live data, and picks a visual answer. You can see it here: it filtered homes under three hundred thousand, grouped by area, and ranked the worst. The exact SQL and the run time stay visible, so every answer is auditable."
+
+## 6 · Zoom out — The Tax Divide (2:30–2:58)
+**Screen:** Click **"The Tax Divide map"** preset → heatmap paints in → zoom into Chicago, click a red area.
+**VO:** "Now pull back. One ClickHouse spatial query turns about 1.6 million homes into an explorable map of who's over-taxed. You don't read a report — you see where the burden lands, and click into any pocket of it."
+
+## 7 · Prove it's systemic — the fairness dial (2:58–3:20)
+**Screen:** Click **"Is Cook County fair?"** → scatter + score → **drag the price slider.**
+**VO:** "And it's measurable. Drag this, and the fairness score recomputes live over ClickHouse. The pattern holds: the less a home is worth, the more it's over-taxed. That's the opposite of fair."
+
+## 8 · The impact (3:20–3:52)
+**Screen:** Open **/methodology**, scroll to the **"~$21B/yr"** panel (transparent maths + the QJE citation).
+**VO:** "How big is this? Within this data we measure about four hundred and sixty million dollars a year of excess assessment in Cook County alone. Scaled nationally — and consistent with published research across a hundred and eighteen million homes — it points to roughly twenty billion dollars a year, and we show that as a transparent projection, not a promise. It's quietly taken from the people who can least afford it."
+
+## 9 · The architecture + bonus, fast (3:52–4:08)
+**Screen:** Flash the "Under the hood" sidebar; then the **/portfolio** page showing the **"Postgres (OLTP) joined to ClickHouse (OLAP) · one query"** badge.
+**VO:** "Underneath: ClickHouse is the primary database across eight million rows; Trigger.dev runs the agent, the ingestion, and scheduled checks. And for the bonus track, saved appeals stay in Postgres and join the analytics in a single federated ClickHouse query — one statement, two engines."
+
+## 10 · Close on the homeowner (4:08–4:25)
+**Screen:** A quick 2-second flash of the **UK band** result, then land on the clean verdict card (best product screen), URL + GitHub visible.
+**VO:** "The same pipeline already covers a second US county and live UK council-tax checks. The data was always public — the missing piece was making it understandable. Overtaxed turns millions of buried records into an answer any homeowner can actually use. That's Overtaxed."
+
+---
+
+## Credibility guardrails (do NOT deviate)
+- Never say "my home address," "we won," "money back," or "ready to file/send." Say **"a real home," "ready to review," "evidence to challenge it."**
+- The national figure is a **projection**, always labelled as such. Never state it as guaranteed.
+- The map shows **assessed value vs nearby sales evidence** — don't claim more than that.
 
 ## Do / Don't
-- **Do** open mid-action on the product. **Don't** show your face or a logo first.
-- **Do** say a number the moment it's on screen. **Do** let each visual breathe.
-- **Do** linger on the **live SQL** and the **latency badge** — that's catnip for the ClickHouse judges.
-- **Don't** read code or explain architecture for more than ~20 seconds.
-- Keep it **under 5:00**. If tight, trim the UK beat (3:25–3:45) first, then shorten the impact VO.
+- **Do** open mid-action; **don't** show a landing page, a face, or a logo card first.
+- **Do** give Trigger its full ~7s dashboard beat — both tools must feel load-bearing.
+- **Do** hold the generated SQL and the latency badge — that's the ClickHouse-judge payoff.
+- **Don't** exceed ~20s on architecture. **Don't** run past ~4:35.
+- If long, trim the fairness beat (§7) before anything else; never cut the Ask-anything climax.
