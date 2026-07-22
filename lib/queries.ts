@@ -164,8 +164,8 @@ export async function analyzeProperty(pin: string): Promise<{
     subtitle: `Assessed ${usd(r.assessed)} vs ${mkt} ${usd(baseMarket)} (ratio ${ratio.toFixed(2)} vs neighbourhood median ${medianRatio.toFixed(2)}).`,
     simple:
       annualOverpay > 0
-        ? `In plain terms: the tax office values your home at ${usd(r.assessed)}, but ${usedComps ? "homes like yours nearby recently sold for about" : "your home recently sold for"} ${usd(baseMarket)}. Similar homes are taxed at roughly ${medianRatio.toFixed(2)}× their value — which points to a fair value near ${usd(fairAssessed)}. So your bill looks about ${usd(annualOverpay)} a year too high.`
-        : `In plain terms: your assessment lines up with what similar homes nearby actually sell for, so you don't appear to be overpaying.`,
+        ? `In plain terms: the tax office thinks your home is worth ${usd(r.assessed)}, but ${usedComps ? "homes like yours nearby recently sold for about" : "your home recently sold for"} ${usd(baseMarket)}. Going by what those homes actually sell for, a fairer value is around ${usd(fairAssessed)}, which means your bill looks about ${usd(annualOverpay)} a year too high.`
+        : `In plain terms: your home's value lines up with what similar homes nearby actually sell for, so you don't look like you're overpaying.`,
     technicalRows: [
       { label: "Assessor's market value", value: usd(r.assessed) },
       { label: usedComps ? "Comparable homes (median sale)" : "Most recent sale", value: usd(baseMarket) },
@@ -283,7 +283,7 @@ export async function getRegressivity(
         : `PRD ${prd} — within the fair range.`,
     simple:
       prd > 1.03 && lo != null && hi != null
-        ? `In plain terms: across ${n.toLocaleString("en-US")} homes here, the cheapest are taxed at about ${lo}× their value while the most expensive are taxed at only ${hi}× — so lower-value homes carry a heavier share. That's the opposite of fair.`
+        ? `In plain terms: across ${n.toLocaleString("en-US")} homes here, cheaper homes get taxed harder than pricier ones, so the people who can least afford it carry more of the load. That's the opposite of fair.`
         : `In plain terms: taxes here look broadly even between cheaper and pricier homes.`,
   };
 
@@ -496,7 +496,7 @@ export async function checkUkBand(addressQuery: string): Promise<{
       (estBand ? `, and your last sale back-casts to a ${estBand} 1991 value` : "") +
       `. Refund backdated to ${saleYear} (~£${owedBack.toLocaleString("en-GB")}).`,
     simple: overBanded
-      ? `In plain terms: your home is in Band ${s.band}, but ${neigh.length} similar homes on your street are in the lower Band ${proposedBand}${estBand ? ` — and your last sale, wound back to 1991 prices, also points to Band ${proposedBand}` : ""}. So you're likely paying about £${annualOverpay.toLocaleString("en-GB")} a year too much, and could be owed roughly £${owedBack.toLocaleString("en-GB")} back.`
+      ? `In plain terms: your home is in Band ${s.band}, but ${neigh.length} similar homes on your street are in the lower Band ${proposedBand}${estBand ? `, and your last sale, rolled back to 1991 prices, also points to Band ${proposedBand}` : ""}. So you're likely paying about £${annualOverpay.toLocaleString("en-GB")} a year too much, and could be owed roughly £${owedBack.toLocaleString("en-GB")} back.`
       : `In plain terms: your band matches your neighbours and your home's likely 1991 value, so it looks correct.`,
     technicalRows: [
       { label: "Your current band", value: `Band ${s.band}` },

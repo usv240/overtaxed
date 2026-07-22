@@ -26,22 +26,22 @@ export const appealDebate = task({
   maxDuration: 120,
   run: async (facts: DebateFacts) => {
     const money = (n: number) => `${facts.currency === "GBP" ? "£" : "$"}${Math.round(n).toLocaleString("en-US")}`;
+    const pctHigher = Math.max(0, Math.round((facts.assessed / facts.market - 1) * 100));
     const brief =
-      `Property: ${facts.address}. Assessor's value ${money(facts.assessed)}; comparable market value ${money(facts.market)}; ` +
-      `assessment ratio ${facts.ratio.toFixed(2)} vs neighbourhood median ${facts.medianRatio.toFixed(2)}; ` +
-      `estimated annual overpayment ${money(facts.overpay)}; ${facts.compsCount} comparable sales nearby.`;
+      `Home at ${facts.address}. The tax office values it at ${money(facts.assessed)}, but similar homes nearby recently sold for about ${money(facts.market)} — roughly ${pctHigher}% higher than it looks worth. That works out to about ${money(facts.overpay)} a year in extra tax, and we're going off ${facts.compsCount} real nearby sales.`;
+
+    const TONE =
+      "Write in warm, plain English a regular homeowner instantly understands. Exactly 2 short sentences. Use round dollar amounts and everyday words. Never use jargon like 'assessment ratio', 'median', 'comparables', or percentages-of-ratios. Talk like a straight-talking friend, not a lawyer. No preamble.";
 
     const [forCase, againstCase] = await Promise.all([
       generateText({
         model: anthropic(MODEL),
-        system:
-          "You are the HOMEOWNER'S ADVOCATE. In exactly 2 short, punchy sentences, argue why they SHOULD appeal this property-tax assessment. Cite the concrete numbers. No preamble, no hedging.",
+        system: `You are on the homeowner's side. Tell them, simply, why it's worth challenging this tax bill. ${TONE}`,
         prompt: brief,
       }),
       generateText({
         model: anthropic(MODEL),
-        system:
-          "You are the ASSESSOR'S DEVIL'S ADVOCATE. In exactly 2 short, fair sentences, argue why this appeal might FAIL or not be worth the effort (imperfect comps, small margin, effort, or risk the assessor re-values). No preamble.",
+        system: `You are a fair, honest friend giving the other side. Gently explain why appealing might not be worth it or might not work (the homes compared aren't identical, the gap is small, it takes effort, or the office could re-check and not budge). Be kind and balanced. ${TONE}`,
         prompt: brief,
       }),
     ]);
@@ -52,8 +52,8 @@ export const appealDebate = task({
       againstCase: againstCase.text.trim(),
       recommendation: file ? ("file" as const) : ("hold" as const),
       rationale: file
-        ? `The case to appeal is stronger: a ${money(facts.overpay)}/yr overpayment backed by ${facts.compsCount} comparable sales.`
-        : `It's marginal — the likely saving may not outweigh the effort or the risk of re-valuation.`,
+        ? `Worth doing: you could claim back about ${money(facts.overpay)} a year, and ${facts.compsCount} nearby sales back you up.`
+        : `Probably not worth it: the likely saving is small, and filing takes a bit of effort.`,
     };
   },
 });
