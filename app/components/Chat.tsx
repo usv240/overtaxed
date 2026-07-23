@@ -41,6 +41,7 @@ const FOLLOWUP = {
   usHome: { label: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
   ukBand: { label: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
   ask: { label: "Ask the data anything", q: "How many Cook County homes sold for over $1M in 2023?" },
+  appeal: { label: "Prepare my appeal", q: "Generate my appeal packet for this home" },
 } as const;
 
 function suggestFollowups(parts: any[]): { label: string; q: string }[] {
@@ -64,7 +65,7 @@ function suggestFollowups(parts: any[]): { label: string; q: string }[] {
     // UK verdicts carry GBP; US carry USD.
     return currency === "GBP"
       ? [FOLLOWUP.usHome, FOLLOWUP.fair, FOLLOWUP.map]
-      : [FOLLOWUP.fair, FOLLOWUP.map, FOLLOWUP.ask];
+      : [FOLLOWUP.appeal, FOLLOWUP.fair, FOLLOWUP.map];
   }
   return [];
 }
