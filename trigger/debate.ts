@@ -31,7 +31,7 @@ export const appealDebate = task({
       `Home at ${facts.address}. The tax office values it at ${money(facts.assessed)}, but similar homes nearby recently sold for about ${money(facts.market)} — roughly ${pctHigher}% higher than it looks worth. That works out to about ${money(facts.overpay)} a year in extra tax, and we're going off ${facts.compsCount} real nearby sales.`;
 
     const TONE =
-      "Write in warm, plain English a regular homeowner instantly understands. Exactly 2 short sentences. Use round dollar amounts and everyday words. Never use jargon like 'assessment ratio', 'median', 'comparables', or percentages-of-ratios. Talk like a straight-talking friend, not a lawyer. No preamble.";
+      "Write in warm, plain English a regular homeowner instantly understands. Exactly 2 short sentences. Use round dollar amounts and everyday words. Never use jargon like 'assessment ratio', 'median', 'comparables', or percentages-of-ratios. Never use an em-dash or en-dash; use a comma or a period instead. Talk like a straight-talking friend, not a lawyer. No preamble.";
 
     const [forCase, againstCase] = await Promise.all([
       generateText({
