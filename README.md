@@ -4,7 +4,7 @@
 
 Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026**, theme *"Beyond the Wall of Text."*
 
-**▶ Live demo: https://overtaxed-mauve.vercel.app · 🎬 Video: https://youtu.be/P5RC4348Ssc · Repo: https://github.com/usv240/overtaxed**
+**Live demo: https://overtaxed-mauve.vercel.app · Video: https://youtu.be/P5RC4348Ssc · Repo: https://github.com/usv240/overtaxed**
 
 > Estimates from public records. Not tax or legal advice.
 
@@ -94,7 +94,7 @@ flowchart TD
 - **`chat.agent("overtaxed")`** ([`trigger/chat.ts`](trigger/chat.ts)) runs the whole conversation. Tools return **visual specs**, never prose.
 - **Durable, long-running ingestion tasks** ([`trigger/ingest.ts`](trigger/ingest.ts)) stream millions of rows into ClickHouse, retryable, no timeouts.
 - **A durable sub-task** ([`trigger/debate.ts`](trigger/debate.ts)): the agent hands the for-vs-against appeal debate to a child task where two Claude advocates argue in parallel, then a verdict.
-- **A scheduled (cron) task** ([`trigger/watch.ts`](trigger/watch.ts)) re-checks saved homes and snapshots changes (OLTP → OLAP → OLTP). The **"Watch this home"** button in the UI enrols a home in it with a single click, so the durable, scheduled workflow is something you can actually see and trigger.
+- **A scheduled (cron) task** ([`trigger/watch.ts`](trigger/watch.ts)) re-checks saved homes and snapshots changes (OLTP to OLAP to OLTP). The **"Watch this home"** button in the UI enrols a home in it with a single click, so the durable, scheduled workflow is something you can actually see and trigger.
 
 ---
 
