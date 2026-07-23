@@ -361,7 +361,7 @@ export async function getRegressivityMap(region: string): Promise<{ spec: Regres
     region,
     center,
     cells,
-    caption: `Every ~1 km cell coloured by how its homes are assessed vs what they sold for — red = assessed above sale price. ${cells.length.toLocaleString()} cells over ${cells.reduce((s, c) => s + c.n, 0).toLocaleString()} sold homes.`,
+    caption: `Every ~1 km cell coloured by how its homes are assessed vs what they sold for. Red means assessed above sale price. ${cells.length.toLocaleString()} cells over ${cells.reduce((s, c) => s + c.n, 0).toLocaleString()} sold homes.`,
   };
   return { spec, elapsedMs, rowsRead: cells.length };
 }

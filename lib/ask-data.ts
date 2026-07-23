@@ -23,7 +23,7 @@ Domain notes:
 - The over-assessment RATIO = assessed_value / latest_sale_price. Join assessments a to a home's latest sale: (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales GROUP BY pin) ls ON ls.pin = a.pin.
 - Keep only sane arms-length ratios: assessed_value / sp BETWEEN 0.2 AND 3.0.
 - sale_price and assessed_value are whole-currency integers.
-- IMPORTANT: there is NO zip, city, neighbourhood, or municipality column. 'region' is only county-level ('Cook County' / 'Allegheny County'). For any AREA / NEIGHBOURHOOD / TOWNSHIP breakdown, the township name is stored in assessments.address — GROUP BY a.address, alias it as the area, and always exclude blanks with a.address != ''. Require a minimum group size (e.g. HAVING count() >= 10) so tiny groups don't dominate.
+- IMPORTANT: there is NO zip, city, neighbourhood, or municipality column. 'region' is only county-level ('Cook County' / 'Allegheny County'). For any AREA / NEIGHBOURHOOD / TOWNSHIP breakdown, the township name is stored in assessments.address as a BARE name already (e.g. 'Lemont', 'Cicero') with NO comma, city, or extra text. Use a.address DIRECTLY as the area (GROUP BY a.address, alias it 'area'); do NOT run substring, splitByChar, position, or any parsing on it. Always exclude blanks with a.address != '', and require HAVING count() >= 10 so tiny groups don't dominate.
 - Always return at least one row: prefer aggregates that are guaranteed to produce rows (avoid over-filtering).`;
 
 const Out = z.object({

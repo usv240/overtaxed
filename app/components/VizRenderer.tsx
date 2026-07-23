@@ -532,7 +532,7 @@ function RegressivityCard({
       )}
 
       {spec.simple && <Simple>{spec.simple}</Simple>}
-      {spec.impact && (
+      {spec.impact && minPrice < 50000 && (
         <div className="mt-3 rounded-xl border border-neg/25 bg-neg/5 p-3">
           <div className="flex items-center gap-1.5 text-sm font-semibold text-neg">
             <Icon name="target" size={16} /> The human cost
