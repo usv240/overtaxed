@@ -41,7 +41,7 @@ export const appealDebate = task({
       }),
       generateText({
         model: anthropic(MODEL),
-        system: `You are a fair, honest friend giving the other side. Gently explain why appealing might not be worth it or might not work (the homes compared aren't identical, the gap is small, it takes effort, or the office could re-check and not budge). Be kind and balanced. ${TONE}`,
+        system: `You argue the CAUTIOUS side, honestly. Give real reasons this appeal might NOT be worth it or might fail: the compared homes aren't identical, the gap could shrink under review, it takes time and paperwork, or the office may not budge. Do NOT conclude that it's worth it or that they should appeal, that's the other advocate's job. Stay balanced and kind, but genuinely make the case for caution. ${TONE}`,
         prompt: brief,
       }),
     ]);

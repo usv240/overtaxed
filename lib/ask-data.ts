@@ -22,7 +22,9 @@ Domain notes:
 - US regions are exactly 'Cook County' and 'Allegheny County'. UK data has country='UK'.
 - The over-assessment RATIO = assessed_value / latest_sale_price. Join assessments a to a home's latest sale: (SELECT pin, argMax(sale_price, sale_date) AS sp FROM overtaxed.sales GROUP BY pin) ls ON ls.pin = a.pin.
 - Keep only sane arms-length ratios: assessed_value / sp BETWEEN 0.2 AND 3.0.
-- sale_price and assessed_value are whole-currency integers.`;
+- sale_price and assessed_value are whole-currency integers.
+- IMPORTANT: there is NO zip, city, neighbourhood, or municipality column. 'region' is only county-level ('Cook County' / 'Allegheny County'). For any AREA / NEIGHBOURHOOD / TOWNSHIP breakdown, the township name is stored in assessments.address — GROUP BY a.address, alias it as the area, and always exclude blanks with a.address != ''. Require a minimum group size (e.g. HAVING count() >= 10) so tiny groups don't dominate.
+- Always return at least one row: prefer aggregates that are guaranteed to produce rows (avoid over-filtering).`;
 
 const Out = z.object({
   sql: z.string().describe("ONE read-only ClickHouse SELECT (or WITH ... SELECT). No trailing semicolon."),
@@ -64,8 +66,13 @@ export async function askData(
     const j = (await rs.json()) as { meta?: { name: string }[]; data?: (string | number | null)[][] };
     const elapsedMs = Math.round((performance.now() - started) * 10) / 10;
     const columns = (j.meta ?? []).map((m) => m.name);
-    const rows = (j.data ?? []).slice(0, 200);
-    if (!columns.length) return { spec: null, elapsedMs, error: "No results." };
+    // Drop rows whose first (label) column is blank/null, then cap.
+    const cleaned = (j.data ?? []).filter((r) => !(r.length && (r[0] === "" || r[0] === null)));
+    const rows = cleaned.slice(0, 200);
+    // No columns OR no usable rows -> return nothing so the agent retries instead of rendering an empty card.
+    if (!columns.length || rows.length === 0) {
+      return { spec: null, elapsedMs, error: "That query returned no usable rows; try a different grouping." };
+    }
 
     const okIdx = (i: number) => Number.isInteger(i) && i >= 0 && i < columns.length;
     const chart =

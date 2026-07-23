@@ -539,7 +539,7 @@ function RegressivityCard({
           </div>
           <p className="mt-1.5 text-sm leading-relaxed">
             <strong>{spec.impact.overAssessedPct}%</strong> of homes here are over-assessed versus a fair system.
-            Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong> a year,
+            Lower-value homeowners overpay about <strong>{money(spec.impact.excessTaxBelowMeasured)}</strong>{" "}a year,
             and that&apos;s only from the {spec.impact.soldSample.toLocaleString()} homes sold last year.
             The typical over-assessed lower-value home pays <strong>{money(spec.impact.avgOverpayBelow)}</strong> too much.
           </p>
