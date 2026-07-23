@@ -22,10 +22,17 @@ function pgSource(table: string): string {
 export async function saveProperty(p: {
   country: string; pin?: string | null; address: string; region?: string | null; userId?: string;
 }) {
+  const userId = p.userId ?? "demo";
+  // Idempotent: re-saving the same home replaces it instead of piling up rows.
+  await pgQuery(
+    `DELETE FROM saved_properties
+      WHERE user_id = $1 AND (($2::text IS NOT NULL AND pin = $2) OR ($2::text IS NULL AND address = $3))`,
+    [userId, p.pin ?? null, p.address],
+  );
   await pgQuery(
     `INSERT INTO saved_properties (user_id, country, pin, address, region)
      VALUES ($1,$2,$3,$4,$5)`,
-    [p.userId ?? "demo", p.country, p.pin ?? null, p.address, p.region ?? null],
+    [userId, p.country, p.pin ?? null, p.address, p.region ?? null],
   );
 }
 
