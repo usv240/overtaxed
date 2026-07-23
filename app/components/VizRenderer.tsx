@@ -173,7 +173,7 @@ export function VizRenderer({ spec, ms, rows }: { spec: VizSpec; ms?: number; ro
       return (
         <Card>
           <div className="mb-2 flex items-center justify-between">
-            <h4 className="font-semibold">Your street, by assessment ratio</h4>
+            <h4 className="font-semibold">Your street, mapped</h4>
             <div className="flex items-center gap-2 text-[11px] text-muted">
               <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full" style={{ background: "#dc2626" }} />over</span>
               <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-full" style={{ background: "#22c55e" }} />fair</span>
