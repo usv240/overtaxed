@@ -36,7 +36,8 @@ const Out = z.object({
   }),
 });
 
-const BANNED = /\b(insert|update|delete|alter|drop|create|attach|detach|truncate|rename|grant|revoke|optimize|system|kill|into\s+outfile|into\s+dumpfile)\b/i;
+const BANNED =
+  /\b(insert|update|delete|alter|drop|create|attach|detach|truncate|rename|grant|revoke|optimize|system|kill|into\s+outfile|into\s+dumpfile|url|urlcluster|s3|s3cluster|gcs|remote|remotesecure|cluster|mysql|postgresql|jdbc|odbc|hdfs|file|input|azureblobstorage|deltalake|iceberg|hudi)\b/i;
 
 export async function askData(
   question: string,

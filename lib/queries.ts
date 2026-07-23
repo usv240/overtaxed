@@ -16,7 +16,6 @@ import type {
   VerdictCard,
   StreetMap,
   RegressivityScatter,
-  DistributionStrip,
   CompsTable,
   AppealPacket,
   FairnessLeaderboard,
