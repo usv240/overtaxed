@@ -484,7 +484,7 @@ export async function checkUkBand(addressQuery: string): Promise<{
   const verdict: VerdictCard = {
     kind: "verdictCard",
     headline: overBanded
-      ? `Wrong council tax band — overpaying ~£${annualOverpay.toLocaleString("en-GB")}/yr`
+      ? `Wrong council tax band, overpaying ~£${annualOverpay.toLocaleString("en-GB")}/yr`
       : `Your council tax band looks correct`,
     overpaymentPerPeriod: annualOverpay,
     period: "year",

@@ -17,7 +17,7 @@ const EXAMPLES = [
   { icon: "home", title: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
   { icon: "grid", title: "The Tax Divide map", q: "Show me the Tax Divide map for Cook County" },
   { icon: "chart", title: "Is Cook County fair?", q: "Is Cook County assessed fairly?" },
-  { icon: "pin", title: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
+  { icon: "pin", title: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11 1DX" },
 ] as const;
 
 /** Pull VizSpecs (+ timing) out of a message's tool-output parts. */
@@ -39,7 +39,7 @@ const FOLLOWUP = {
   map: { label: "The Tax Divide map", q: "Show me the Tax Divide map for Cook County" },
   worst: { label: "Most unfair areas", q: "Which Cook County neighbourhoods are the most unfairly assessed?" },
   usHome: { label: "Check a US home", q: "Am I overtaxed at 4317 N Monticello Ave, Chicago?" },
-  ukBand: { label: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11" },
+  ukBand: { label: "Check a UK band", q: "Check 12 Lavender Sweep, London SW11 1DX" },
   ask: { label: "Ask the data anything", q: "How many Cook County homes sold for over $1M in 2023?" },
   appeal: { label: "Prepare my appeal", q: "Generate my appeal packet for this home" },
 } as const;
