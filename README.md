@@ -4,10 +4,21 @@
 
 Built for the **ClickHouse × Trigger.dev Virtual Summer Hackathon 2026**, theme *"Beyond the Wall of Text."*
 
-**▶ Live demo: https://overtaxed-ujwal-s-projects5.vercel.app**
-**Repo: https://github.com/usv240/overtaxed**
+**▶ Live demo: https://overtaxed-mauve.vercel.app · 🎬 Video: https://youtu.be/P5RC4348Ssc · Repo: https://github.com/usv240/overtaxed**
 
 > Estimates from public records. Not tax or legal advice.
+
+---
+
+## Highlights (the 10-second version)
+
+- **Every answer is a visual, not text:** a verdict, a street map, comps, a fairness chart, a county heatmap, and a filled-in appeal PDF.
+- **Ask the data anything:** the agent writes and runs a safe, read-only **ClickHouse** query live, then charts the result, over 8M rows, with the SQL and latency shown.
+- **ClickHouse is the star:** `geoDistance` comps, IAAO PRD/COD fairness, a spatial heatmap (~1,800 cells in ~200ms), a materialized view, `url()` zero-ETL ingestion, and a `postgresql()` OLTP+OLAP federation.
+- **Trigger.dev orchestration:** `chat.agent()` + durable ingestion + a durable *for-vs-against* debate sub-task + a scheduled "watch my home" cron.
+- **Real, quantified impact:** ~**$460M/yr** measured in Cook County, projected to ~**$20B/yr** nationally (transparent, sourced).
+- **Two countries, real data:** US (2 counties) + UK (live VOA), 6M+ UK sales, added with no code changes.
+- **Production-grade:** deployed live, unit-tested with CI, MIT-licensed, and honest ("show the maths" on every result).
 
 ---
 
