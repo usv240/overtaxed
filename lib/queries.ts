@@ -539,7 +539,7 @@ export async function generateAppealPacket(pin: string): Promise<{ spec: AppealP
 
   const spec: AppealPacket = {
     kind: "appealPacket",
-    jurisdiction: "Cook County, IL — Assessor's Office / Board of Review",
+    jurisdiction: "Cook County, IL (Assessor's Office / Board of Review)",
     summary: `Grounds: lack of uniformity + overvaluation. Your assessment implies a market value of ${usd(m.assessed)}, but ${a.comps?.comps.length ?? 0} comparable arms-length sales nearby support about ${usd(fair)}.`,
     fields: [
       { label: "Property PIN", value: pin },
